@@ -1,7 +1,7 @@
 //Todas as variaveis para a simulação
 let scene, renderer, camera, controls;
 
-let box;
+let terrainPlane, road;
 
 window.onload = function init() {
     'use strict';
@@ -27,6 +27,8 @@ window.onload = function init() {
 
     renderStuff()
     createTerrain()
+    createInfrastructure()
+    createLight();
 
 
 }
@@ -35,6 +37,7 @@ window.onload = function init() {
 function createTerrain() {
     terrainPlane = new Physijs.PlaneMesh(
         new THREE.PlaneGeometry(50, 50, 2),
+        // FIXME: Change to PHONG MATERIAL AFTER LIGHTS
         new THREE.MeshBasicMaterial({
             color: 0x888888,
             side: THREE.DoubleSide,
@@ -46,6 +49,36 @@ function createTerrain() {
     //Podes alterar isto para olhar para o Carro (YARICK)
     camera.lookAt(terrainPlane.position);
     console.log("Terreno criado com sucesso!");
+
+}
+
+//Função para criar o terreno da simulação
+function createInfrastructure() {
+    //ATENÇÃO todos os bumpmaps e texturas não são as oficiais ainda(APENAS PARA TESTE)
+    let bumpmapTexture = new THREE.TextureLoader().load("./Textures/Road_bump_map_temp.jpg");
+
+    road = new Physijs.BoxMesh(
+        new THREE.BoxGeometry(50, 0, 10),
+        new THREE.MeshPhongMaterial({
+            color: 0xD8F6E5,
+            bumpMap: bumpmapTexture,
+            bumpScale: 0.20
+        })
+
+    );
+    scene.add(road);
+    road.position.set(0, 0, 0)
+    console.log("Infraestrutura criada com sucesso!")
+}
+
+//Função para criar as luzes da simulação
+function createLight() {
+
+    //ATENÇÃO TEMP LIGHT
+    const light = new THREE.AmbientLight(0x404040, 1); // soft white light
+    scene.add(light);
+    light.position.set(0, 5, 0)
+    console.log("Luzes criadas com sucesso")
 
 }
 
