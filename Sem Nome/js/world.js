@@ -1,14 +1,14 @@
 //Todas as variaveis para a simulação
-let scene, renderer, camera, controls;
+let scene, renderer, camera;
 
 //Variáveis básicas para a cidade
-let terrainPlane, road, sideWalk;
+let terrainPlane, rua, passeio, passeio2;
 
 //Variáveis utilizadas para a mudança de metrologia na cidade
-let sun, ambientLight;
+let sol, luzAmbiente;
 
 //Variáveis usadas para o sistema de ruas da cidade
-let roadMaster, swMaster
+let passeioMain;
 
 window.onload = function init() {
     'use strict';
@@ -23,7 +23,7 @@ window.onload = function init() {
 
     //Camera
     camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 1000);
-    camera.position.set(-270, 60,40)
+    camera.position.set(-270, 60, 40)
     scene.add(camera)
 
     //Renderer
@@ -87,7 +87,7 @@ function createInfrastructure() {
     //Road
     let bumpmapTexture = new THREE.TextureLoader().load("./Textures/Road_bump_map_temp.jpg");
 
-    road = new Physijs.BoxMesh(
+    rua = new Physijs.BoxMesh(
         new THREE.BoxGeometry(300, 2, 66),
         new THREE.MeshPhongMaterial({
             //FIXME: TEMPORARY COLORS
@@ -97,14 +97,14 @@ function createInfrastructure() {
         })
 
     );
-    scene.add(road);
-    road.position.set(0, -8, 0)
+    scene.add(rua);
+    rua.position.set(0, -8, 0)
 
     //Sidewalk
-    swMaster = new THREE.Object3D()
+    passeioMain = new THREE.Object3D()
 
     bumpmapTexture = new THREE.TextureLoader().load("./textures/Sw_bump_map_temp.jpg")
-    sideWalk = new Physijs.BoxMesh(
+    passeio = new Physijs.BoxMesh(
         new THREE.BoxGeometry(300, 2, 10),
         new THREE.MeshPhongMaterial({
             //FIXME: TEMPORARY COLORS
@@ -115,7 +115,7 @@ function createInfrastructure() {
 
     );
 
-    sideWalk2 = new Physijs.BoxMesh(
+    passeio2 = new Physijs.BoxMesh(
         new THREE.BoxGeometry(300, 2, 10),
         new THREE.MeshPhongMaterial({
             //FIXME: TEMPORARY COLORS
@@ -126,34 +126,33 @@ function createInfrastructure() {
 
     );
 
-    sideWalk.position.set(-5, -7, 36);
-    sideWalk2.position.set(-5, -7, -36);
-    swMaster.add(sideWalk);
-    swMaster.add(sideWalk2);
-    scene.add(swMaster);
+    passeio.position.set(-5, -7, 36);
+    passeio2.position.set(-5, -7, -36);
+    passeioMain.add(passeio);
+    passeioMain.add(passeio2);
+    scene.add(passeioMain);
     console.log("Infraestrutura criada com sucesso!")
 }
 
 //Função para criar as luzes da simulação
 function createLight() {
 
-
-    sun = new THREE.DirectionalLight(0xC3C3C3, 0.5);
-    scene.add(sun);
+    sol = new THREE.DirectionalLight(0xC3C3C3, 0.5);
+    scene.add(sol);
     //FIXME:Changes to the position will be needed 
-    sun.position.set(0, 2000, 0)
+    sol.position.set(0, 2000, 0)
     //Adicionar o target
-    scene.add(sun.target)
+    scene.add(sol.target)
 
     //FIXME: REMOVE LATER
-    const helper = new THREE.DirectionalLightHelper(sun, 5);
+    const helper = new THREE.DirectionalLightHelper(sol, 5);
     scene.add(helper);
 
     //ATENÇÃO TEMP LIGHT
     //FIXME: Change the lighting
-    ambientLight = new THREE.AmbientLight(0xFFFFFF, 1); // soft white light
-    scene.add(ambientLight);
-    ambientLight.position.set(0, 50, 0)
+    luzAmbiente = new THREE.AmbientLight(0xFFFFFF, 1); // soft white light
+    scene.add(luzAmbiente);
+    luzAmbiente.position.set(0, 50, 0)
 
     console.log("Luzes criadas com sucesso")
 }
