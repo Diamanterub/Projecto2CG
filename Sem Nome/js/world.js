@@ -2,15 +2,13 @@
 let scene, renderer, camera;
 
 //Variáveis básicas para a cidade
-let terrainPlane, pavimento1, pavimento2, passeio, passeio2;
+let terrainPlane, pavimento1, pavimento2;
 
 //Variáveis utilizadas para a mudança de metrologia na cidade
 let sol, luzAmbiente, solCamera;
 
 let solPotencia = 1;
 
-//Variáveis usadas para o sistema de ruas da cidade
-let passeioMain;
 
 window.onload = function init() {
     //Scene
@@ -210,67 +208,70 @@ function createParkingLot() {
 
     //Linhas do parque de estacionamento
 
-    let space = new THREE.Object3D();
+    let espacoModelo = new THREE.Object3D();
 
     function createParkingLines() {
 
-        let linegeometry1 = new THREE.PlaneGeometry(40, 2, 32) // |
-        let linegeometry2 = new THREE.PlaneGeometry(2, 30, 32) // -
-        let linematerial = new THREE.MeshBasicMaterial({
+        let geometriaLinha1 = new THREE.PlaneGeometry(40, 2, 32) // |
+        let geometriaLinha2 = new THREE.PlaneGeometry(2, 30, 32) // -
+        let materialLinha = new THREE.MeshBasicMaterial({
             color: 0xFFFFFF,
             side: THREE.DoubleSide
         });
 
-        let linha = new THREE.Mesh(linegeometry1, linematerial);
+        let linha = new THREE.Mesh(geometriaLinha1, materialLinha);
         linha.position.set(-90, 1, 160);
         linha.rotateX(Math.PI / 2)
-        space.add(linha);
+        espacoModelo.add(linha);
+        linha.receiveShadow = true
 
-        linha = new THREE.Mesh(linegeometry2, linematerial)
+        linha = new THREE.Mesh(geometriaLinha2, materialLinha)
         linha.position.set(-109, 1, 145);
         linha.rotateX(Math.PI / 2);
-        space.add(linha);
+        espacoModelo.add(linha);
+        linha.receiveShadow = true
 
-        linha = new THREE.Mesh(linegeometry1, linematerial);
+        linha = new THREE.Mesh(geometriaLinha1, materialLinha);
         linha.position.set(-90, 1, 130);
         linha.rotateX(Math.PI / 2)
-        space.add(linha);
-        scene.add(space);
+        linha.receiveShadow = true
+        espacoModelo.add(linha);
+        scene.add(espacoModelo);
 
     }
     createParkingLines()
 
 
     for (let i = 0; i < 6; i++) {
-        let space1 = new THREE.Object3D();
-        space1.copy(space, true)
-        space1.position.set(0, 0.1, -30 * i)
-        scene.add(space1);
+        let espacoCopiado = new THREE.Object3D();
+        espacoCopiado.copy(espacoModelo, true)
+        espacoCopiado.position.set(0, 0.1, -30 * i)
+        scene.add(espacoCopiado);
     }
 
     for (let i = 0; i < 6; i++) {
-        let space1 = new THREE.Object3D();
-        space1.copy(space, true)
-        space1.position.set(-100, 0.1, 290 - i * 30)
-        space1.rotateY(Math.PI)
-        scene.add(space1);
-    }
-
-    for (let i = 0; i < 6   ; i++) {
-        let space1 = new THREE.Object3D();
-        space1.copy(space, true)
-        space1.position.set(118, 0.1, -30 * i)
-        scene.add(space1);
+        let espacoCopiado = new THREE.Object3D();
+        espacoCopiado.copy(espacoModelo, true)
+        espacoCopiado.position.set(-100, 0.1, 290 - i * 30)
+        espacoCopiado.rotateY(Math.PI)
+        scene.add(espacoCopiado);
     }
 
     for (let i = 0; i < 6; i++) {
-        let space1 = new THREE.Object3D();
-        space1.copy(space, true)
-        space1.position.set(14, 0.1, 290 - i * 30)
-        space1.rotateY(Math.PI)
-        scene.add(space1);
+        let espacoCopiado = new THREE.Object3D();
+        espacoCopiado.copy(espacoModelo, true)
+        espacoCopiado.position.set(118, 0.1, -30 * i)
+        scene.add(espacoCopiado);
     }
-    
+
+    for (let i = 0; i < 6; i++) {
+        let espacoCopiado = new THREE.Object3D();
+        espacoCopiado.copy(espacoModelo, true)
+        espacoCopiado.position.set(14, 0.1, 290 - i * 30)
+        espacoCopiado.rotateY(Math.PI)
+        scene.add(espacoCopiado);
+    }
+
 
 
 
