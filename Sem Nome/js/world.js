@@ -13,15 +13,8 @@ let solPotencia = 1;
 let passeioMain;
 
 window.onload = function init() {
-    'use strict';
-
-    Physijs.scripts.worker = 'js/physi_js/physijs_worker.js';
-    Physijs.scripts.ammo = './ammo.js';
-
-    //Scene Physi.js
-    scene = new Physijs.Scene;
-    //Gravidade da scene
-    scene.setGravity(0, -5, 0);
+    //Scene
+    scene = new THREE.Scene();
 
     //Camera
     camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 2000);
@@ -53,7 +46,7 @@ window.onload = function init() {
 //FIXME: Atenção yarick apaga esta função quando meteres o carro real
 //TEMPORARY FUNCTION DELETE LATER
 function createTemporaryCar() {
-    let car = new Physijs.BoxMesh(
+    let car = new THREE.Mesh(
         new THREE.BoxGeometry(30, 16, 16),
         new THREE.MeshPhongMaterial({
             //FIXME: TEMPORARY COLORS
@@ -68,7 +61,7 @@ function createTemporaryCar() {
 }
 //Função para criar o terreno da simulação
 function createTerrain() {
-    terrainPlane = new Physijs.PlaneMesh(
+    terrainPlane = new THREE.Mesh(
         new THREE.PlaneGeometry(2000, 2000, 2),
         new THREE.MeshPhongMaterial({
             //FIXME: TEMPORARY COLORS
@@ -93,7 +86,7 @@ function createParkingLot() {
     let muro1, muro2, muro3;
     let chao = new THREE.Object3D()
     let bumpmapTexture = new THREE.TextureLoader().load("./Textures/Road_bump_map_temp.jpg");
-    pavimento1 = new Physijs.BoxMesh(
+    pavimento1 = new THREE.Mesh(
         new THREE.BoxGeometry(250, 2, 350),
         new THREE.MeshPhongMaterial({
             //FIXME: TEMPORARY COLORS
@@ -106,7 +99,7 @@ function createParkingLot() {
     pavimento1.position.set(0, 0, 0)
     chao.add(pavimento1);
     //Area da zona de entregas
-    pavimento2 = new Physijs.BoxMesh(
+    pavimento2 = new THREE.Mesh(
         new THREE.BoxGeometry(200, 2, 150),
         new THREE.MeshPhongMaterial({
             //FIXME: TEMPORARY COLORS
@@ -126,7 +119,7 @@ function createParkingLot() {
     //Walls
     bumpmapTexture = new THREE.TextureLoader().load("./Textures/brickwall_bump_map_temp.jpg");
     let muroObjeto = new THREE.Object3D()
-    muro1 = new Physijs.BoxMesh(
+    muro1 = new THREE.Mesh(
         new THREE.BoxGeometry(10, 30, 150),
         new THREE.MeshPhongMaterial({
             //FIXME: TEMPORARY COLORS
@@ -138,7 +131,7 @@ function createParkingLot() {
     );
     muro1.position.set(320, 16, -100)
 
-    muro2 = new Physijs.BoxMesh(
+    muro2 = new THREE.Mesh(
         new THREE.BoxGeometry(450, 30, 10),
         new THREE.MeshPhongMaterial({
             //FIXME: TEMPORARY COLORS
@@ -150,7 +143,7 @@ function createParkingLot() {
     );
     muro2.position.set(100, 16, -170)
 
-    muro3 = new Physijs.BoxMesh(
+    muro3 = new THREE.Mesh(
         new THREE.BoxGeometry(10, 30, 290),
         new THREE.MeshPhongMaterial({
             //FIXME: TEMPORARY COLORS
@@ -162,7 +155,7 @@ function createParkingLot() {
     );
     muro3.position.set(-120, 16, 30)
 
-    muro4 = new Physijs.BoxMesh(
+    muro4 = new THREE.Mesh(
         new THREE.BoxGeometry(250, 30, 10),
         new THREE.MeshPhongMaterial({
             //FIXME: TEMPORARY COLORS
@@ -188,7 +181,7 @@ function createParkingLot() {
     let portaoPoste, portaoTerminal;
     //Gate
 
-    portaoPoste = new Physijs.CylinderMesh(
+    portaoPoste = new THREE.Mesh(
         new THREE.CylinderGeometry(1, 1, 44, 32),
         new THREE.MeshPhongMaterial({
             //FIXME: TEMPORARY COLORS
@@ -200,7 +193,7 @@ function createParkingLot() {
     portaoPoste.position.set(-110, 10, -136)
     scene.add(portaoPoste);
 
-    portaoTerminal = new Physijs.BoxMesh(
+    portaoTerminal = new THREE.Mesh(
         new THREE.BoxGeometry(5, 30, 10),
         new THREE.MeshPhongMaterial({
             //FIXME: TEMPORARY COLORS
@@ -209,9 +202,11 @@ function createParkingLot() {
 
     );
     portaoTerminal.position.set(-110, 2, -160)
-    portaoObjeto.add(portaoObjeto);
+    portaoObjeto.add(portaoPoste);
     portaoObjeto.add(portaoTerminal);
     scene.add(portaoObjeto);
+
+    console.log("Parking lot criado com sucesso")
 
 }
 
