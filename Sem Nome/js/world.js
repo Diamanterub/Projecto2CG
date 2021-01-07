@@ -18,7 +18,7 @@ window.onload = function init() {
 
     //Camera
     camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 2000);
-    camera.position.set(-480, 250, 200)
+    camera.position.set(0, 650, 200)
     scene.add(camera)
 
     //Renderer
@@ -177,9 +177,10 @@ function createParkingLot() {
     muroObjeto.add(muro4);
     scene.add(muroObjeto);
 
+
+    //Portão
     let portaoObjeto = new THREE.Object3D()
     let portaoPoste, portaoTerminal;
-    //Gate
 
     portaoPoste = new THREE.Mesh(
         new THREE.CylinderGeometry(1, 1, 44, 32),
@@ -190,7 +191,7 @@ function createParkingLot() {
     );
 
     portaoPoste.rotateX(Math.PI / 2);
-    portaoPoste.position.set(-110, 10, -136)
+    portaoPoste.position.set(-115, 10, -136)
     scene.add(portaoPoste);
 
     portaoTerminal = new THREE.Mesh(
@@ -201,7 +202,7 @@ function createParkingLot() {
         })
 
     );
-    portaoTerminal.position.set(-110, 2, -160)
+    portaoTerminal.position.set(-115, 2, -160)
     portaoObjeto.add(portaoPoste);
     portaoObjeto.add(portaoTerminal);
     scene.add(portaoObjeto);
