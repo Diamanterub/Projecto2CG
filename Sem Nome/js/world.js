@@ -25,7 +25,7 @@ window.onload = function init() {
 
     //Camera
     camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 1000);
-    camera.position.set(-570, 400, 10)
+    camera.position.set(-570, 250, 200)
     scene.add(camera)
 
     //Renderer
@@ -69,7 +69,7 @@ function createTemporaryCar() {
 //Função para criar o terreno da simulação
 function createTerrain() {
     terrainPlane = new Physijs.PlaneMesh(
-        new THREE.PlaneGeometry(2000,2000, 2),
+        new THREE.PlaneGeometry(2000, 2000, 2),
         new THREE.MeshPhongMaterial({
             //FIXME: TEMPORARY COLORS
             color: 0x79A43D,
@@ -122,7 +122,7 @@ function createParkingLot() {
     chao.add(pavimento2);
     scene.add(chao);
 
-    
+
     //Walls
     bumpmapTexture = new THREE.TextureLoader().load("./Textures/brickwall_bump_map_temp.jpg");
     let muroObjeto = new THREE.Object3D()
@@ -183,6 +183,35 @@ function createParkingLot() {
     muroObjeto.add(muro3);
     muroObjeto.add(muro4);
     scene.add(muroObjeto);
+
+    let portaoObjeto = new THREE.Object3D()
+    let portaoPoste, portaoTerminal;
+    //Gate
+
+    portaoPoste = new Physijs.CylinderMesh(
+        new THREE.CylinderGeometry(1, 1, 44, 32),
+        new THREE.MeshPhongMaterial({
+            //FIXME: TEMPORARY COLORS
+            color: 0xFFD966,
+        })
+    );
+
+    portaoPoste.rotateX(Math.PI / 2);
+    portaoPoste.position.set(-110, 10, -136)
+    scene.add(portaoPoste);
+
+    portaoTerminal = new Physijs.BoxMesh(
+        new THREE.BoxGeometry(5, 30, 10),
+        new THREE.MeshPhongMaterial({
+            //FIXME: TEMPORARY COLORS
+            color: 0xB45F06,
+        })
+
+    );
+    portaoTerminal.position.set(-110, 2, -160)
+    portaoObjeto.add(portaoObjeto);
+    portaoObjeto.add(portaoTerminal);
+    scene.add(portaoObjeto);
 
 }
 
