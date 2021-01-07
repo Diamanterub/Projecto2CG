@@ -24,8 +24,8 @@ window.onload = function init() {
     scene.setGravity(0, -5, 0);
 
     //Camera
-    camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 1000);
-    camera.position.set(-570, 250, 200)
+    camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 2000);
+    camera.position.set(-480, 250, 200)
     scene.add(camera)
 
     //Renderer
