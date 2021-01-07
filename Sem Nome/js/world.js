@@ -76,7 +76,6 @@ function createTerrain() {
     //Podes alterar isto para olhar para o Carro (YARICK)
     camera.lookAt(terrainPlane.position);
     console.log("Terreno criado com sucesso!");
-
 }
 
 //Função para criar os detalhes  da simulação
@@ -208,6 +207,72 @@ function createParkingLot() {
     scene.add(portaoObjeto);
 
     console.log("Parking lot criado com sucesso")
+
+    //Linhas do parque de estacionamento
+
+    let space = new THREE.Object3D();
+
+    function createParkingLines() {
+
+        let linegeometry1 = new THREE.PlaneGeometry(40, 2, 32) // |
+        let linegeometry2 = new THREE.PlaneGeometry(2, 30, 32) // -
+        let linematerial = new THREE.MeshBasicMaterial({
+            color: 0xFFFFFF,
+            side: THREE.DoubleSide
+        });
+
+        let linha = new THREE.Mesh(linegeometry1, linematerial);
+        linha.position.set(-90, 1, 160);
+        linha.rotateX(Math.PI / 2)
+        space.add(linha);
+
+        linha = new THREE.Mesh(linegeometry2, linematerial)
+        linha.position.set(-109, 1, 145);
+        linha.rotateX(Math.PI / 2);
+        space.add(linha);
+
+        linha = new THREE.Mesh(linegeometry1, linematerial);
+        linha.position.set(-90, 1, 130);
+        linha.rotateX(Math.PI / 2)
+        space.add(linha);
+        scene.add(space);
+
+    }
+    createParkingLines()
+
+
+    for (let i = 0; i < 6; i++) {
+        let space1 = new THREE.Object3D();
+        space1.copy(space, true)
+        space1.position.set(0, 0.1, -30 * i)
+        scene.add(space1);
+    }
+
+    for (let i = 0; i < 6; i++) {
+        let space1 = new THREE.Object3D();
+        space1.copy(space, true)
+        space1.position.set(-100, 0.1, 290 - i * 30)
+        space1.rotateY(Math.PI)
+        scene.add(space1);
+    }
+
+    for (let i = 0; i < 6   ; i++) {
+        let space1 = new THREE.Object3D();
+        space1.copy(space, true)
+        space1.position.set(118, 0.1, -30 * i)
+        scene.add(space1);
+    }
+
+    for (let i = 0; i < 6; i++) {
+        let space1 = new THREE.Object3D();
+        space1.copy(space, true)
+        space1.position.set(14, 0.1, 290 - i * 30)
+        space1.rotateY(Math.PI)
+        scene.add(space1);
+    }
+    
+
+
 
 }
 
