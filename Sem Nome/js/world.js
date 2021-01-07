@@ -60,6 +60,7 @@ function createTerrain() {
     //Variáveis básicas para a simulação
     let terrenoPlano;
 
+    //Criar a mesh do plano 
     terrenoPlano = new THREE.Mesh(
         new THREE.PlaneGeometry(2000, 2000, 2),
         new THREE.MeshPhongMaterial({
@@ -72,7 +73,7 @@ function createTerrain() {
     terrenoPlano.position.set(0, 0, 0);
     terrenoPlano.rotateX(Math.PI / 2);
     scene.add(terrenoPlano);
-    //Podes alterar isto para olhar para o Carro (YARICK)
+    //FIXME:Podes alterar isto para olhar para o Carro (YARICK)
     camera.lookAt(terrenoPlano.position);
     console.log("Terreno criado com sucesso!");
 }
@@ -84,13 +85,15 @@ function createParkingLot() {
     let muro;
     let pavimento;
     let chao = new THREE.Object3D()
-    let bumpmapTexture = new THREE.TextureLoader().load("./Textures/Road_bump_map_temp.jpg");
+    //A texture do bumpMap do pavimento
+    let bumpmapPavimento = new THREE.TextureLoader().load("./Textures/Road_bump_map_temp.jpg");
+    //Zona do parque de estacionamento
     pavimento = new THREE.Mesh(
         new THREE.BoxGeometry(250, 2, 350),
         new THREE.MeshPhongMaterial({
             //FIXME: TEMPORARY COLORS
             color: 0x444444,
-            bumpMap: bumpmapTexture,
+            bumpMap: bumpmapPavimento,
             bumpScale: 0.20
         })
 
@@ -104,7 +107,7 @@ function createParkingLot() {
         new THREE.MeshPhongMaterial({
             //FIXME: TEMPORARY COLORS
             color: 0x444444,
-            bumpMap: bumpmapTexture,
+            bumpMap: bumpmapPavimento,
             bumpScale: 0.20
         })
 
@@ -116,10 +119,12 @@ function createParkingLot() {
 
 
     //Walls
+    //A texture do bumpMap da parede
     bumpmapTexture = new THREE.TextureLoader().load("./Textures/brickwall_bump_map_temp.jpg");
     let muroObjeto = new THREE.Object3D()
 
     
+    //Os vários muros que estão presentes no mapa
     muro = new THREE.Mesh(
         new THREE.BoxGeometry(10, 30, 150),
         new THREE.MeshPhongMaterial({
@@ -183,7 +188,7 @@ function createParkingLot() {
     scene.add(muroObjeto);
 
 
-    //Portão
+    //Carcela
     let portaoObjeto = new THREE.Object3D()
     let portaoPoste, portaoTerminal;
 
@@ -199,6 +204,8 @@ function createParkingLot() {
     portaoPoste.position.set(-115, 10, -136)
     scene.add(portaoPoste);
 
+    //Terminal da carcela
+    //TODO:Make a better terminal
     portaoTerminal = new THREE.Mesh(
         new THREE.BoxGeometry(5, 30, 10),
         new THREE.MeshPhongMaterial({
@@ -217,7 +224,7 @@ function createParkingLot() {
     //Linhas do parque de estacionamento
 
     let espacoModelo = new THREE.Object3D();
-
+    //Criação do modelo do espaço do parque
     function createParkingLines() {
 
         let geometriaLinha1 = new THREE.PlaneGeometry(40, 2, 32) // |
@@ -231,25 +238,26 @@ function createParkingLot() {
         linha.position.set(-90, 1, 160);
         linha.rotateX(Math.PI / 2)
         espacoModelo.add(linha);
-        linha.receiveShadow = true
+        // linha.receiveShadow = true
 
         linha = new THREE.Mesh(geometriaLinha2, materialLinha)
         linha.position.set(-109, 1, 145);
         linha.rotateX(Math.PI / 2);
         espacoModelo.add(linha);
-        linha.receiveShadow = true
+        // linha.receiveShadow = true
 
         linha = new THREE.Mesh(geometriaLinha1, materialLinha);
         linha.position.set(-90, 1, 130);
         linha.rotateX(Math.PI / 2)
-        linha.receiveShadow = true
+        // linha.receiveShadow = true
         espacoModelo.add(linha);
         scene.add(espacoModelo);
 
     }
-    createParkingLines()
+    createParkingLines()    
 
 
+    //Criação de vários 
     for (let i = 0; i < 6; i++) {
         let espacoCopiado = new THREE.Object3D();
         espacoCopiado.copy(espacoModelo, true)
