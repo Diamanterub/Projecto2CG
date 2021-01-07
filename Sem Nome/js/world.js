@@ -132,7 +132,7 @@ function createParkingLot() {
             //FIXME: TEMPORARY COLORS
             color: 0xE06666,
             bumpMap: bumpmapTexture,
-            bumpScale: 0.20
+            bumpScale: 0.40
         })
 
     );
@@ -144,7 +144,7 @@ function createParkingLot() {
             //FIXME: TEMPORARY COLORS
             color: 0xE06666,
             bumpMap: bumpmapTexture,
-            bumpScale: 0.20
+            bumpScale: 0.40
         })
 
     );
@@ -156,7 +156,7 @@ function createParkingLot() {
             //FIXME: TEMPORARY COLORS
             color: 0xE06666,
             bumpMap: bumpmapTexture,
-            bumpScale: 0.20
+            bumpScale: 0.40
         })
 
     );
@@ -168,7 +168,7 @@ function createParkingLot() {
             //FIXME: TEMPORARY COLORS
             color: 0xE06666,
             bumpMap: bumpmapTexture,
-            bumpScale: 0.20
+            bumpScale: 0.40
         })
 
     );
@@ -236,8 +236,8 @@ function createLight() {
     sol.shadow.camera.far = 2100;
 
     //FIXME: REMOVE LATER
-    const helper = new THREE.DirectionalLightHelper(sol, 5);
-    scene.add(helper);
+    // const helper = new THREE.DirectionalLightHelper(sol, 5);
+    // scene.add(helper);
 
     //ATENÇÃO TEMP LIGHT
     //FIXME: Change the lighting
