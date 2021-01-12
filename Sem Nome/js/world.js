@@ -15,7 +15,7 @@ window.onload = function init() {
 
     //Camera
     camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 2000);
-    camera.position.set(100, 250, 300)
+    camera.position.set(-400, 350, -100)
     scene.add(camera)
 
     //Renderer
@@ -291,16 +291,47 @@ function createParkingLot() {
 
     //TODO:LINHAS DO PARQUE CARGA E DESCARGA
 
+    let linhaDescarga = new THREE.Object3D();
+    let geometriaLinha1 = new THREE.PlaneGeometry(170, 2, 32) // |
+    let geometriaLinha2 = new THREE.PlaneGeometry(2, 120, 32) // -
+    let geometriaLinha3 = new THREE.PlaneGeometry(3, 267, 32) // \ and /
+    let materialLinha = new THREE.MeshBasicMaterial({
+        color: 0xF1C232,
+        side: THREE.DoubleSide
+    });
 
+    let linha = new THREE.Mesh(geometriaLinha1, materialLinha);
+    linha.rotateX(Math.PI / 2);
+    linha.position.set(20, 0, 0);
+    linhaDescarga.add(linha);
 
+    linha = new THREE.Mesh(geometriaLinha2, materialLinha);
+    linha.rotateX(Math.PI / 2);
+    linha.position.set(105, 0, -59);
+    linhaDescarga.add(linha);
 
+    linha = new THREE.Mesh(geometriaLinha1, materialLinha);
+    linha.rotateX(Math.PI / 2);
+    linha.position.set(20, 0, -118);
+    linhaDescarga.add(linha);
 
+    linha = new THREE.Mesh(geometriaLinha2, materialLinha);
+    linha.rotateX(Math.PI / 2);
+    linha.position.set(-66, 0, -59);
+    linhaDescarga.add(linha);
 
+    linha = new THREE.Mesh(geometriaLinha3, materialLinha);
+    linha.rotateX(Math.PI / 3.55);
+    linha.position.set(-66, 0, -118);
+    linhaDescarga.add(linha);
 
+    linha = new THREE.Mesh(geometriaLinha3, materialLinha);
+    linha.rotateX(Math.PI / -3.54);
+    linha.position.set(-66, 0, 0);
+    linhaDescarga.add(linha);
 
-
-
-
+    linhaDescarga.position.set(200, 1.1, -40)
+    scene.add(linhaDescarga)
 
     //Road Lamps
 
