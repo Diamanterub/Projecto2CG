@@ -265,25 +265,24 @@ function createParkingLot() {
         espacoCopiado.copy(espacoModelo, true)
         espacoCopiado.position.set(0, 0.1, -30 * i)
         scene.add(espacoCopiado);
-    }
 
-    for (let i = 0; i < 6; i++) {
-        let espacoCopiado = new THREE.Object3D();
+        espacoCopiado = new THREE.Object3D();
         espacoCopiado.copy(espacoModelo, true)
         espacoCopiado.position.set(-100, 0.1, 290 - i * 30)
         espacoCopiado.rotateY(Math.PI)
         scene.add(espacoCopiado);
-    }
 
-    for (let i = 0; i < 6; i++) {
-        let espacoCopiado = new THREE.Object3D();
+        espacoCopiado = new THREE.Object3D();
         espacoCopiado.copy(espacoModelo, true)
         espacoCopiado.position.set(118, 0.1, -30 * i)
         scene.add(espacoCopiado);
-    }
 
-    for (let i = 0; i < 6; i++) {
-        let espacoCopiado = new THREE.Object3D();
+        espacoCopiado = new THREE.Object3D();
+        espacoCopiado.copy(espacoModelo, true)
+        espacoCopiado.position.set(118, 0.1, -30 * i)
+        scene.add(espacoCopiado);
+
+        espacoCopiado = new THREE.Object3D();
         espacoCopiado.copy(espacoModelo, true)
         espacoCopiado.position.set(14, 0.1, 290 - i * 30)
         espacoCopiado.rotateY(Math.PI)
@@ -300,7 +299,9 @@ function createParkingLot() {
 
 
 
-    
+
+
+
     //Road Lamps
 
     //Objeto 3D
