@@ -6,6 +6,8 @@ let sol, luzAmbiente, solCamera;
 
 let solPotencia = 1;
 
+let luzLampada;
+
 
 window.onload = function init() {
     //Scene
@@ -13,7 +15,7 @@ window.onload = function init() {
 
     //Camera
     camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 2000);
-    camera.position.set(0, 650, 200)
+    camera.position.set(100, 250, 300)
     scene.add(camera)
 
     //Renderer
@@ -123,7 +125,7 @@ function createParkingLot() {
     bumpmapTexture = new THREE.TextureLoader().load("./Textures/brickwall_bump_map_temp.jpg");
     let muroObjeto = new THREE.Object3D()
 
-    
+
     //Os vários muros que estão presentes no mapa
     muro = new THREE.Mesh(
         new THREE.BoxGeometry(10, 30, 150),
@@ -254,10 +256,10 @@ function createParkingLot() {
         scene.add(espacoModelo);
 
     }
-    createParkingLines()    
+    createParkingLines()
 
 
-    //Criação de vários 
+    //Criação de várias Linhas do parque
     for (let i = 0; i < 6; i++) {
         let espacoCopiado = new THREE.Object3D();
         espacoCopiado.copy(espacoModelo, true)
@@ -288,8 +290,78 @@ function createParkingLot() {
         scene.add(espacoCopiado);
     }
 
+    //TODO:LINHAS DO PARQUE CARGA E DESCARGA
 
 
+
+
+
+
+
+
+
+    
+    //Road Lamps
+
+    //Objeto 3D
+    let posteIluminacaoMod = new THREE.Object3D();
+
+    // Construido por Peças
+    //Poste
+    let peca = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.5, 1, 44, 32),
+        new THREE.MeshPhongMaterial({
+            //FIXME: TEMPORARY COLORS
+            color: 0x271D1D,
+        })
+    );
+    posteIluminacaoMod.add(peca)
+    //O conector entre o poste e a lampada
+    peca = new THREE.Mesh(
+        new THREE.BoxGeometry(9, 1.5, 1),
+        new THREE.MeshPhongMaterial({
+            //FIXME: TEMPORARY COLORS
+            color: 0x271D1D,
+        })
+    );
+    peca.position.set(0, 20, 0)
+    posteIluminacaoMod.add(peca);
+    //Lampada
+    for (let i = 0; i < 2; i++) {
+        //Caixa da Lampada
+        peca = new THREE.Mesh(
+            new THREE.CylinderGeometry(1, 3, 5, 32),
+            new THREE.MeshPhongMaterial({
+                //FIXME: TEMPORARY COLORS
+                color: 0x271D1D,
+            })
+        );
+        peca.position.set(-5, 20, 0)
+        posteIluminacaoMod.add(peca);
+    }
+
+    peca.position.set(5, 20, 0)
+
+    for (let i = 0; i < 2; i++) {
+        peca = new THREE.Mesh(
+            new THREE.CylinderGeometry(1, 2.5, 5, 32),
+            new THREE.MeshLambertMaterial({
+                //FIXME: TEMPORARY COLORS
+                color: 0x271D1D,
+                emissive: 0xF1D71D,
+            })
+        );
+        peca.position.set(-5, 19, 0)
+        posteIluminacaoMod.add(peca);
+    }
+    peca.position.set(5, 19, 0)
+    posteIluminacaoMod.position.set(9, 22, 40)
+    scene.add(posteIluminacaoMod)
+
+    let posteIluminacaoCop = new THREE.Object3D();
+    posteIluminacaoCop.copy(posteIluminacaoMod, true)
+    posteIluminacaoCop.position.set(9, 22, 100)
+    scene.add(posteIluminacaoCop);
 
 }
 
@@ -323,6 +395,32 @@ function createLight() {
     scene.add(luzAmbiente);
     luzAmbiente.position.set(0, 50, 0)
 
+    //Luzes relacionadas as lampadas
+
+    for (let i = 0; i < 2; i++) {
+        luzLampada = new THREE.SpotLight(0xFFFFFF, 1, 60, Math.PI / 3, 0.80);
+        luzLampada.position.set(0, 40, 41);
+        luzLampada.target.position.set(0, -360, 35);
+        luzLampada.castShadow = true;
+        luzLampada.autoUpdate = true;
+        scene.add(luzLampada);
+        scene.add(luzLampada.target);
+
+    }
+    luzLampada.position.set(15, 40, 41);
+
+    for (let i = 0; i < 2; i++) {
+        luzLampada = new THREE.SpotLight(0xFFFFFF, 1, 60, Math.PI / 3, 0.80);
+        luzLampada.position.set(5, 40, 100);
+        luzLampada.target.position.set(0, -360, 65);
+        luzLampada.castShadow = true;
+        luzLampada.autoUpdate = true;
+        scene.add(luzLampada);
+        scene.add(luzLampada.target);
+    }
+    luzLampada.position.set(15, 40, 100);
+
+    //TODO:Adapt the Lamp Light to the day and night Cycle
     console.log("Luzes criadas com sucesso")
 }
 
