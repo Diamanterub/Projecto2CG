@@ -347,6 +347,8 @@ function createParkingLot() {
             color: 0x271D1D,
         })
     );
+    peca.receiveShadow = true;
+    peca.castShadow = true;
     posteIluminacaoMod.add(peca)
     //O conector entre o poste e a lampada
     peca = new THREE.Mesh(
@@ -356,6 +358,8 @@ function createParkingLot() {
             color: 0x271D1D,
         })
     );
+    peca.receiveShadow = true;
+    peca.castShadow = true;
     peca.position.set(0, 20, 0)
     posteIluminacaoMod.add(peca);
     //Lampada
@@ -368,6 +372,8 @@ function createParkingLot() {
                 color: 0x271D1D,
             })
         );
+        peca.receiveShadow = true;
+        peca.castShadow = true;
         peca.position.set(-5, 20, 0)
         posteIluminacaoMod.add(peca);
     }
@@ -383,6 +389,8 @@ function createParkingLot() {
                 emissive: 0xF1D71D,
             })
         );
+        peca.receiveShadow = true;
+        peca.castShadow = true;
         peca.position.set(-5, 19, 0)
         posteIluminacaoMod.add(peca);
     }
