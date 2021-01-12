@@ -231,7 +231,7 @@ function createParkingLot() {
 
         let geometriaLinha1 = new THREE.PlaneGeometry(40, 2, 32) // |
         let geometriaLinha2 = new THREE.PlaneGeometry(2, 30, 32) // -
-        let materialLinha = new THREE.MeshBasicMaterial({
+        let materialLinha = new THREE.MeshPhongMaterial({
             color: 0xFFFFFF,
             side: THREE.DoubleSide
         });
@@ -240,18 +240,18 @@ function createParkingLot() {
         linha.position.set(-90, 1, 160);
         linha.rotateX(Math.PI / 2)
         espacoModelo.add(linha);
-        // linha.receiveShadow = true
+         linha.receiveShadow = true
 
         linha = new THREE.Mesh(geometriaLinha2, materialLinha)
         linha.position.set(-109, 1, 145);
         linha.rotateX(Math.PI / 2);
         espacoModelo.add(linha);
-        // linha.receiveShadow = true
+         linha.receiveShadow = true
 
         linha = new THREE.Mesh(geometriaLinha1, materialLinha);
         linha.position.set(-90, 1, 130);
         linha.rotateX(Math.PI / 2)
-        // linha.receiveShadow = true
+     linha.receiveShadow = true
         espacoModelo.add(linha);
         scene.add(espacoModelo);
 
