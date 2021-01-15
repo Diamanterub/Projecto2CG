@@ -6,6 +6,8 @@ let sol, luzAmbiente, solCamera;
 
 let solPotencia = 1;
 
+let luzLampada;
+
 
 window.onload = function init() {
     //Scene
@@ -13,7 +15,7 @@ window.onload = function init() {
 
     //Camera
     camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 2000);
-    camera.position.set(0, 650, 200)
+    camera.position.set(-400, 350, -100)
     scene.add(camera)
 
     //Renderer
@@ -123,7 +125,7 @@ function createParkingLot() {
     bumpmapTexture = new THREE.TextureLoader().load("./Textures/brickwall_bump_map_temp.jpg");
     let muroObjeto = new THREE.Object3D()
 
-    
+
     //Os vários muros que estão presentes no mapa
     muro = new THREE.Mesh(
         new THREE.BoxGeometry(10, 30, 150),
@@ -229,7 +231,7 @@ function createParkingLot() {
 
         let geometriaLinha1 = new THREE.PlaneGeometry(40, 2, 32) // |
         let geometriaLinha2 = new THREE.PlaneGeometry(2, 30, 32) // -
-        let materialLinha = new THREE.MeshBasicMaterial({
+        let materialLinha = new THREE.MeshPhongMaterial({
             color: 0xFFFFFF,
             side: THREE.DoubleSide
         });
@@ -238,58 +240,168 @@ function createParkingLot() {
         linha.position.set(-90, 1, 160);
         linha.rotateX(Math.PI / 2)
         espacoModelo.add(linha);
-        // linha.receiveShadow = true
+         linha.receiveShadow = true
 
         linha = new THREE.Mesh(geometriaLinha2, materialLinha)
         linha.position.set(-109, 1, 145);
         linha.rotateX(Math.PI / 2);
         espacoModelo.add(linha);
-        // linha.receiveShadow = true
+         linha.receiveShadow = true
 
         linha = new THREE.Mesh(geometriaLinha1, materialLinha);
         linha.position.set(-90, 1, 130);
         linha.rotateX(Math.PI / 2)
-        // linha.receiveShadow = true
+     linha.receiveShadow = true
         espacoModelo.add(linha);
         scene.add(espacoModelo);
 
     }
-    createParkingLines()    
+    createParkingLines()
 
 
-    //Criação de vários 
+    //Criação de várias Linhas do parque
     for (let i = 0; i < 6; i++) {
         let espacoCopiado = new THREE.Object3D();
         espacoCopiado.copy(espacoModelo, true)
         espacoCopiado.position.set(0, 0.1, -30 * i)
         scene.add(espacoCopiado);
-    }
 
-    for (let i = 0; i < 6; i++) {
-        let espacoCopiado = new THREE.Object3D();
+        espacoCopiado = new THREE.Object3D();
         espacoCopiado.copy(espacoModelo, true)
         espacoCopiado.position.set(-100, 0.1, 290 - i * 30)
         espacoCopiado.rotateY(Math.PI)
         scene.add(espacoCopiado);
-    }
 
-    for (let i = 0; i < 6; i++) {
-        let espacoCopiado = new THREE.Object3D();
+        espacoCopiado = new THREE.Object3D();
         espacoCopiado.copy(espacoModelo, true)
         espacoCopiado.position.set(118, 0.1, -30 * i)
         scene.add(espacoCopiado);
-    }
 
-    for (let i = 0; i < 6; i++) {
-        let espacoCopiado = new THREE.Object3D();
+        espacoCopiado = new THREE.Object3D();
+        espacoCopiado.copy(espacoModelo, true)
+        espacoCopiado.position.set(118, 0.1, -30 * i)
+        scene.add(espacoCopiado);
+
+        espacoCopiado = new THREE.Object3D();
         espacoCopiado.copy(espacoModelo, true)
         espacoCopiado.position.set(14, 0.1, 290 - i * 30)
         espacoCopiado.rotateY(Math.PI)
         scene.add(espacoCopiado);
     }
 
+    //TODO:LINHAS DO PARQUE CARGA E DESCARGA
 
+    let linhaDescarga = new THREE.Object3D();
+    let geometriaLinha1 = new THREE.PlaneGeometry(170, 2, 32) // |
+    let geometriaLinha2 = new THREE.PlaneGeometry(2, 120, 32) // -
+    let geometriaLinha3 = new THREE.PlaneGeometry(3, 267, 32) // \ and /
+    let materialLinha = new THREE.MeshBasicMaterial({
+        color: 0xF1C232,
+        side: THREE.DoubleSide
+    });
 
+    let linha = new THREE.Mesh(geometriaLinha1, materialLinha);
+    linha.rotateX(Math.PI / 2);
+    linha.position.set(20, 0, 0);
+    linhaDescarga.add(linha);
+
+    linha = new THREE.Mesh(geometriaLinha2, materialLinha);
+    linha.rotateX(Math.PI / 2);
+    linha.position.set(105, 0, -59);
+    linhaDescarga.add(linha);
+
+    linha = new THREE.Mesh(geometriaLinha1, materialLinha);
+    linha.rotateX(Math.PI / 2);
+    linha.position.set(20, 0, -118);
+    linhaDescarga.add(linha);
+
+    linha = new THREE.Mesh(geometriaLinha2, materialLinha);
+    linha.rotateX(Math.PI / 2);
+    linha.position.set(-66, 0, -59);
+    linhaDescarga.add(linha);
+
+    linha = new THREE.Mesh(geometriaLinha3, materialLinha);
+    linha.rotateX(Math.PI / 3.55);
+    linha.position.set(-66, 0, -118);
+    linhaDescarga.add(linha);
+
+    linha = new THREE.Mesh(geometriaLinha3, materialLinha);
+    linha.rotateX(Math.PI / -3.54);
+    linha.position.set(-66, 0, 0);
+    linhaDescarga.add(linha);
+
+    linhaDescarga.position.set(200, 1.1, -40)
+    scene.add(linhaDescarga)
+
+    //Road Lamps
+
+    //Objeto 3D
+    let posteIluminacaoMod = new THREE.Object3D();
+
+    // Construido por Peças
+    //Poste
+    let peca = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.5, 1, 44, 32),
+        new THREE.MeshPhongMaterial({
+            //FIXME: TEMPORARY COLORS
+            color: 0x271D1D,
+        })
+    );
+    peca.receiveShadow = true;
+    peca.castShadow = true;
+    posteIluminacaoMod.add(peca)
+    //O conector entre o poste e a lampada
+    peca = new THREE.Mesh(
+        new THREE.BoxGeometry(9, 1.5, 1),
+        new THREE.MeshPhongMaterial({
+            //FIXME: TEMPORARY COLORS
+            color: 0x271D1D,
+        })
+    );
+    peca.receiveShadow = true;
+    peca.castShadow = true;
+    peca.position.set(0, 20, 0)
+    posteIluminacaoMod.add(peca);
+    //Lampada
+    for (let i = 0; i < 2; i++) {
+        //Caixa da Lampada
+        peca = new THREE.Mesh(
+            new THREE.CylinderGeometry(1, 3, 5, 32),
+            new THREE.MeshPhongMaterial({
+                //FIXME: TEMPORARY COLORS
+                color: 0x271D1D,
+            })
+        );
+        peca.receiveShadow = true;
+        peca.castShadow = true;
+        peca.position.set(-5, 20, 0)
+        posteIluminacaoMod.add(peca);
+    }
+
+    peca.position.set(5, 20, 0)
+
+    for (let i = 0; i < 2; i++) {
+        peca = new THREE.Mesh(
+            new THREE.CylinderGeometry(1, 2.5, 5, 32),
+            new THREE.MeshLambertMaterial({
+                //FIXME: TEMPORARY COLORS
+                color: 0x271D1D,
+                emissive: 0xF1D71D,
+            })
+        );
+        peca.receiveShadow = true;
+        peca.castShadow = true;
+        peca.position.set(-5, 19, 0)
+        posteIluminacaoMod.add(peca);
+    }
+    peca.position.set(5, 19, 0)
+    posteIluminacaoMod.position.set(9, 22, 40)
+    scene.add(posteIluminacaoMod)
+
+    let posteIluminacaoCop = new THREE.Object3D();
+    posteIluminacaoCop.copy(posteIluminacaoMod, true)
+    posteIluminacaoCop.position.set(9, 22, 100)
+    scene.add(posteIluminacaoCop);
 
 }
 
@@ -323,6 +435,32 @@ function createLight() {
     scene.add(luzAmbiente);
     luzAmbiente.position.set(0, 50, 0)
 
+    //Luzes relacionadas as lampadas
+
+    for (let i = 0; i < 2; i++) {
+        luzLampada = new THREE.SpotLight(0xFFFFFF, 1, 60, Math.PI / 3, 0.80);
+        luzLampada.position.set(0, 40, 41);
+        luzLampada.target.position.set(0, -360, 35);
+        luzLampada.castShadow = true;
+        luzLampada.autoUpdate = true;
+        scene.add(luzLampada);
+        scene.add(luzLampada.target);
+
+    }
+    luzLampada.position.set(15, 40, 41);
+
+    for (let i = 0; i < 2; i++) {
+        luzLampada = new THREE.SpotLight(0xFFFFFF, 1, 60, Math.PI / 3, 0.80);
+        luzLampada.position.set(5, 40, 100);
+        luzLampada.target.position.set(0, -360, 65);
+        luzLampada.castShadow = true;
+        luzLampada.autoUpdate = true;
+        scene.add(luzLampada);
+        scene.add(luzLampada.target);
+    }
+    luzLampada.position.set(15, 40, 100);
+
+    //TODO:Adapt the Lamp Light to the day and night Cycle
     console.log("Luzes criadas com sucesso")
 }
 
