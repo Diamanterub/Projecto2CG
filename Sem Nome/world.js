@@ -32,14 +32,14 @@ window.onload = function init() {
     document.getElementById('canvas-container').appendChild(renderer.domElement);
     // Funções para a criação do mundo
     renderStuff()
-    criarPlano()
+    criarAmbiente()
     areaJogavel()
     criarLoja()
     createLight()
     sunUpdate()
 }
-// Funçao que cria o plano
-function criarPlano() {
+// Funçao que cria o ambiente
+function criarAmbiente() {
     // Textura do Plano 
     // Semelhante ao projeto que serviu-nos de inspiração
     // Fonte : https://gist.githubusercontent.com/brunosimon/389129c84e8488e30bf8ed0d5e9fc12b/raw/7003eb44ded762dd53a662674c221bfbe0082a58/folio-2019-medium-article-floor.js
@@ -57,41 +57,23 @@ function criarPlano() {
     texturaSolo.magFilter = THREE.LinearFilter;
     texturaSolo.needsUpdate = true;
     // Plano
-    let plano = new THREE.Mesh(
-        new THREE.PlaneGeometry(1000, 1000, 10, 10),
-        new THREE.MeshPhongMaterial({
-            map: texturaSolo,
-            side: THREE.DoubleSide
-        })
-    );
+    let plano = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000, 10, 10), new THREE.MeshPhongMaterial({map: texturaSolo, side: THREE.DoubleSide}));
     plano.position.set(0, 0, 0);
     plano.rotation.x = (Math.PI / 2);
     scene.add(plano);
-
     //Skybox
-    let skybox = new THREE.Mesh(
-        new THREE.SphereGeometry(1000, 1000, 10, 10),
-        new THREE.MeshBasicMaterial({
-            color: skyColor,
-            side: THREE.DoubleSide
-        })
-    )
+    let skybox = new THREE.Mesh(new THREE.SphereGeometry(1000, 1000, 10, 10), new THREE.MeshBasicMaterial({color: skyColor, side: THREE.DoubleSide}));
     scene.add(skybox);
 }
 
 // Função para criar a área onde o utilizador vai movimentar o carro
 function areaJogavel() {
     let pavimento, pavimento_material;
-    let solo = new THREE.Object3D()
-
+    let solo = new THREE.Object3D();
     // Textura do Bump Map do Pavimento
     let bumpMapPavimento = new THREE.TextureLoader().load("./Textures/Road_bump_map_temp.jpg");
     // Material do Pavimento
-    pavimento_material = new THREE.MeshPhongMaterial({
-        color: 0x101010,
-        bumpMap: bumpMapPavimento,
-        bumpScale: 0.08
-    });
+    pavimento_material = new THREE.MeshPhongMaterial({color: 0x101010, bumpMap: bumpMapPavimento, bumpScale: 0.08});
     // Zona do Parque de Estacionamento
     pavimento = new THREE.Mesh(new THREE.BoxGeometry(200, 0.8, 400), pavimento_material);
     pavimento.position.set(-100, 0.6, 0);
@@ -107,44 +89,51 @@ function areaJogavel() {
     // Textura do Bump Map do Muro
     bumpMapMuro = new THREE.TextureLoader().load("./Textures/brickwall_bump_map_temp.jpg");
     let muro = new THREE.Object3D()
-    // Muros (Exteriores)
-    let n_muros = 4,
-        sub_muro, muro_geometry, muro_material;
-    for (let i = 0; i < n_muros; i++) {
-        muro_geometry = new THREE.BoxGeometry((i % 2 == 0 ? 10 : (i == 1 ? 200 : 400)), 22, i % 2 == 0 ? (i == 0 ? 300 : 200) : 10);
-        muro_material = new THREE.MeshPhongMaterial({
-            color: 0xcccccc,
-            bumpMap: bumpMapMuro,
-            bumpScale: 0.16
-        });
-        sub_muro = new THREE.Mesh(muro_geometry, muro_material);
-        sub_muro.position.set(i % 2 == 0 ? (i == 0 ? -195 : 195) : (i == 1 ? -100 : 0), 12, i % 2 == 0 ? (i == 0 ? 50 : -100) : (i == 1 ? 195 : -195))
-        sub_muro.castShadow = true;
-        muro.add(sub_muro);
-    }
-    // Muros (Interiores)
-    //Muro da ala das cargas e descargas
-    let muro_i_geometry = new THREE.BoxGeometry(10, 22, 100);
-    let muro_i_material = new THREE.MeshPhongMaterial({
-        color: 0xcccccc,
-        bumpMap: bumpMapMuro,
-        bumpScale: 0.16
-    });
-    let muro_i = new THREE.Mesh(muro_i_geometry, muro_i_material);
-    muro_i.position.set(5, 12, -50);
-    muro_i.castShadow = true;
-    muro.add(muro_i);
-
-    //Muro do portão
-    muro_i_geometry = new THREE.BoxGeometry(10, 22, 60);
-    muro_i = new THREE.Mesh(muro_i_geometry, muro_i_material);
-    muro_i.rotateY(Math.PI / 2)
-    muro_i.position.set(-160, 12, -95);
-    muro_i.castShadow = true;
-    muro.add(muro_i);
+    let muro_material = new THREE.MeshPhongMaterial({color: 0xcccccc, bumpMap: bumpMapMuro, bumpScale: 0.16});
+        // Muros (Exteriores)
+        let n_muros = 4, sub_muro, muro_geometry;
+        for (let i = 0; i < n_muros; i++) {
+            muro_geometry = new THREE.BoxGeometry((i % 2 == 0 ? 10 : (i == 1 ? 200 : 400)), 22, i % 2 == 0 ? (i == 0 ? 300 : 200) : 10);
+            sub_muro = new THREE.Mesh(muro_geometry, muro_material);
+            sub_muro.position.set(i % 2 == 0 ? (i == 0 ? -195 : 195) : (i == 1 ? -100 : 0), 12, i % 2 == 0 ? (i == 0 ? 50 : -100) : (i == 1 ? 195 : -195))
+            sub_muro.castShadow = true;
+            muro.add(sub_muro);
+        }
+        // Muros (Interiores)
+            //Muro da ala das cargas e descargas
+            let muro_i_geometry = new THREE.BoxGeometry(10, 22, 100);
+            let muro_i = new THREE.Mesh(muro_i_geometry, muro_material);
+            muro_i.position.set(5, 12, -50);
+            muro_i.castShadow = true;
+            muro.add(muro_i);
+            //Muro laterais ao estacionamento
+            let n_muros_laterais = 2, muro_lateral, muro_lateral_g;
+            for(let i = 0; i < n_muros_laterais; i++) {
+                muro_lateral_g = new THREE.BoxGeometry(70, 22, 10);
+                muro_lateral = new THREE.Mesh(muro_lateral_g, muro_material);
+                muro_lateral.position.set(i ==0 ? -165 : -25, 12, -105);
+                muro.add(muro_lateral);
+            }
     scene.add(muro);
-
-
+    // Passeio
+        // Passeio a frente do estacionamento
+        let n_passeios = 2, passeio, passeio_g, passeio_m;
+        passeio_m = new THREE.MeshPhongMaterial({color: 0x606060});
+        for (let i = 0; i < n_passeios; i++){
+            passeio_g = new THREE.PlaneGeometry(19, 290);
+            passeio = new THREE.Mesh(passeio_g, passeio_m);
+            passeio.position.set(i == 0 ? -180.5 : -9.5, 1.06, 45);
+            passeio.rotation.x = -Math.PI / 2;
+            scene.add(passeio);
+        }
+        // Passeio lateral ao estacionamento
+        for (let i = 0; i < (n_passeios * 2); i++){
+            passeio_g = new THREE.PlaneGeometry(41, 9)
+            passeio = new THREE.Mesh(passeio_g, passeio_m);
+            passeio.position.set(i % 2 == 0 ? -150.5 : -39.5, 1.06, i < 2 ? -95.5 : 185.5);
+            passeio.rotation.x = -Math.PI / 2;
+            scene.add(passeio);
+        }
     //Carcela
     let portaoObjeto = new THREE.Object3D()
     let portaoPoste, portaoTerminalPrincipal;
@@ -177,10 +166,7 @@ function areaJogavel() {
 
     portaoTerminalPrincipal.position.set(-156, 9, -186)
     portaoObjeto.add(portaoTerminalPrincipal);
-
-
     let portaoESTerminal = new THREE.Object3D
-
     //Terminal da entrada e Saida no parque
     let corpoterminal = new THREE.Mesh(
         new THREE.BoxGeometry(8, 10, 2),
@@ -262,17 +248,14 @@ function areaJogavel() {
     let areaEstacionamento = new THREE.Object3D();
     let areaEstacionamento2 = new THREE.Object3D();
     // Criação do modelo do espaço do parque
-    let n_linhas = 3,
-        linha, linha_geometry, linha_material;
+    let n_linhas = 3, linha, linha_geometry, linha_material;
     for (let i = 0; i < n_linhas; i++) {
         linha_geometry = new THREE.PlaneGeometry(i % 2 == 0 ? 40 : 2, i % 2 == 0 ? 2 : 32);
-        linha_material = new THREE.MeshPhongMaterial({
-            color: 0xf4f4f4
-        });
+        linha_material = new THREE.MeshPhongMaterial({color: 0xf4f4f4});
         linha = new THREE.Mesh(linha_geometry, linha_material);
         linha.receiveShadow = true;
         linha.rotation.x = -Math.PI / 2;
-        linha.position.set(i % 2 == 0 ? -160 : -180, 1.05, i % 2 == 0 ? (i == 0 ? 180 : 150) : 165);
+        linha.position.set(i % 2 == 0 ? -150 : -170, 1.05, i % 2 == 0 ? (i == 0 ? 180 : 150) : 165);
         areaEstacionamento.add(linha);
     }
     scene.add(areaEstacionamento);
@@ -285,17 +268,14 @@ function areaJogavel() {
     }
     scene.add(test);
     // Criação do modelo do espaço do parque 2
-    let n_linhas2 = 3,
-        linha2, linha_geometry2, linha_material2;
+    let n_linhas2 = 3, linha2, linha_geometry2, linha_material2;
     for (let i = 0; i < n_linhas2; i++) {
         linha_geometry2 = new THREE.PlaneGeometry(i % 2 == 0 ? 40 : 2, i % 2 == 0 ? 2 : 32);
-        linha_material2 = new THREE.MeshPhongMaterial({
-            color: 0xf4f4f4
-        });
+        linha_material2 = new THREE.MeshPhongMaterial({color: 0xf4f4f4});
         linha2 = new THREE.Mesh(linha_geometry2, linha_material2);
         linha2.receiveShadow = true;
         linha2.rotation.x = -Math.PI / 2;
-        linha2.position.set(i % 2 == 0 ? -30 : -10, 1.05, i % 2 == 0 ? (i == 0 ? 180 : 150) : 165);
+        linha2.position.set(i % 2 == 0 ? -40 : -20, 1.05, i % 2 == 0 ? (i == 0 ? 180 : 150) : 165);
         areaEstacionamento2.add(linha2);
     }
     scene.add(areaEstacionamento2);
