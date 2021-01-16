@@ -6,6 +6,8 @@ let sol, luzAmbiente, solCamera;
 let solPotencia = 1;
 let luzLampada;
 var render_stats;
+let posteIluminacaoMod;
+let skyColor = 0x4488ee;
 // Init
 window.onload = function init() {
     // Cena
@@ -15,13 +17,17 @@ window.onload = function init() {
     camera.position.set(-400, 350, -100)
     scene.add(camera)
     // Renderer
-    renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer = new THREE.WebGLRenderer({
+        antialias: true
+    });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCSoftShadowMap;
     // Controlos (Remover após adicionar o carro e respetiva camera)
     let controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.addEventListener('change', function(){ renderer.render(scene, camera);});
+    controls.addEventListener('change', function () {
+        renderer.render(scene, camera);
+    });
     //
     document.getElementById('canvas-container').appendChild(renderer.domElement);
     // Funções para a criação do mundo
@@ -53,11 +59,24 @@ function criarPlano() {
     // Plano
     let plano = new THREE.Mesh(
         new THREE.PlaneGeometry(1000, 1000, 10, 10),
-        new THREE.MeshPhongMaterial({map: texturaSolo, side: THREE.DoubleSide})
+        new THREE.MeshPhongMaterial({
+            map: texturaSolo,
+            side: THREE.DoubleSide
+        })
     );
     plano.position.set(0, 0, 0);
     plano.rotation.x = (Math.PI / 2);
     scene.add(plano);
+
+    //Skybox
+    let skybox = new THREE.Mesh(
+        new THREE.SphereGeometry(1000, 1000, 10, 10),
+        new THREE.MeshBasicMaterial({
+            color: skyColor,
+            side: THREE.DoubleSide
+        })
+    )
+    scene.add(skybox);
 }
 
 // Função para criar a área onde o utilizador vai movimentar o carro
@@ -68,7 +87,11 @@ function areaJogavel() {
     // Textura do Bump Map do Pavimento
     let bumpMapPavimento = new THREE.TextureLoader().load("./Textures/Road_bump_map_temp.jpg");
     // Material do Pavimento
-    pavimento_material = new THREE.MeshPhongMaterial({color: 0x101010, bumpMap: bumpMapPavimento, bumpScale: 0.08});
+    pavimento_material = new THREE.MeshPhongMaterial({
+        color: 0x101010,
+        bumpMap: bumpMapPavimento,
+        bumpScale: 0.08
+    });
     // Zona do Parque de Estacionamento
     pavimento = new THREE.Mesh(new THREE.BoxGeometry(200, 0.8, 400), pavimento_material);
     pavimento.position.set(-100, 0.6, 0);
@@ -85,20 +108,38 @@ function areaJogavel() {
     bumpMapMuro = new THREE.TextureLoader().load("./Textures/brickwall_bump_map_temp.jpg");
     let muro = new THREE.Object3D()
     // Muros (Exteriores)
-    let n_muros = 4, sub_muro, muro_geometry, muro_material;
-    for(let i=0; i<n_muros; i++){
-        muro_geometry = new THREE.BoxGeometry((i%2==0?10:(i==1?200:400)), 22, i%2==0?(i==0?300:200):10);
-        muro_material = new THREE.MeshPhongMaterial({color: 0xcccccc, bumpMap: bumpMapMuro, bumpScale: 0.16});
+    let n_muros = 4,
+        sub_muro, muro_geometry, muro_material;
+    for (let i = 0; i < n_muros; i++) {
+        muro_geometry = new THREE.BoxGeometry((i % 2 == 0 ? 10 : (i == 1 ? 200 : 400)), 22, i % 2 == 0 ? (i == 0 ? 300 : 200) : 10);
+        muro_material = new THREE.MeshPhongMaterial({
+            color: 0xcccccc,
+            bumpMap: bumpMapMuro,
+            bumpScale: 0.16
+        });
         sub_muro = new THREE.Mesh(muro_geometry, muro_material);
-        sub_muro.position.set(i%2==0?(i==0?-195:195):(i==1?-100:0), 12, i%2==0?(i==0?50:-100):(i==1?195:-195))
+        sub_muro.position.set(i % 2 == 0 ? (i == 0 ? -195 : 195) : (i == 1 ? -100 : 0), 12, i % 2 == 0 ? (i == 0 ? 50 : -100) : (i == 1 ? 195 : -195))
         sub_muro.castShadow = true;
         muro.add(sub_muro);
     }
     // Muros (Interiores)
+    //Muro da ala das cargas e descargas
     let muro_i_geometry = new THREE.BoxGeometry(10, 22, 100);
-    let muro_i_material = new THREE.MeshPhongMaterial({color: 0xcccccc, bumpMap: bumpMapMuro, bumpScale: 0.16});
+    let muro_i_material = new THREE.MeshPhongMaterial({
+        color: 0xcccccc,
+        bumpMap: bumpMapMuro,
+        bumpScale: 0.16
+    });
     let muro_i = new THREE.Mesh(muro_i_geometry, muro_i_material);
     muro_i.position.set(5, 12, -50);
+    muro_i.castShadow = true;
+    muro.add(muro_i);
+
+    //Muro do portão
+    muro_i_geometry = new THREE.BoxGeometry(10, 22, 60);
+    muro_i = new THREE.Mesh(muro_i_geometry, muro_i_material);
+    muro_i.rotateY(Math.PI / 2)
+    muro_i.position.set(-160, 12, -95);
     muro_i.castShadow = true;
     muro.add(muro_i);
     scene.add(muro);
@@ -106,77 +147,168 @@ function areaJogavel() {
 
     //Carcela
     let portaoObjeto = new THREE.Object3D()
-    let portaoPoste, portaoTerminal;
+    let portaoPoste, portaoTerminalPrincipal;
     portaoPoste = new THREE.Mesh(
-        new THREE.CylinderGeometry(1, 1, 44, 32),
-        new THREE.MeshPhongMaterial({color: 0xFFD966}));
-    portaoPoste.rotateX(Math.PI / 2);
-    portaoPoste.position.set(-115, 10, -136)
-    scene.add(portaoPoste);
+        new THREE.CylinderGeometry(1, 1, 76, 32),
+        new THREE.MeshPhongMaterial({
+            //FIXME:TEMPORARY COLORS
+            color: 0xd06429
+        }));
 
-    //Terminal da carcela
-    //TODO:Make a better terminal
-    portaoTerminal = new THREE.Mesh(
-        new THREE.BoxGeometry(5, 30, 10),
+    portaoPoste.castShadow = true;
+    portaoPoste.receiveShadow = true;
+
+    portaoPoste.rotateX(Math.PI / 2);
+    portaoPoste.position.set(-156, 12, -148)
+    portaoObjeto.add(portaoPoste);
+
+    //Terminal Principal da carcela
+    portaoTerminalPrincipal = new THREE.Mesh(
+        new THREE.BoxGeometry(5, 16, 5),
         new THREE.MeshPhongMaterial({
             //FIXME: TEMPORARY COLORS
-            color: 0xB45F06,
+            color: 0x323232,
         })
 
     );
-    portaoTerminal.position.set(-115, 2, -160)
-    portaoObjeto.add(portaoPoste);
-    portaoObjeto.add(portaoTerminal);
+
+    portaoTerminalPrincipal.castShadow = true;
+    portaoTerminalPrincipal.receiveShadow = true;
+
+    portaoTerminalPrincipal.position.set(-156, 9, -186)
+    portaoObjeto.add(portaoTerminalPrincipal);
+
+
+    let portaoESTerminal = new THREE.Object3D
+
+    //Terminal da entrada e Saida no parque
+    let corpoterminal = new THREE.Mesh(
+        new THREE.BoxGeometry(8, 10, 2),
+        new THREE.MeshPhongMaterial({
+            //FIXME: TEMPORARY COLORS
+            color: 0xb9ba10,
+        })
+    )
+
+    corpoterminal.receiveShadow = true;
+    portaoESTerminal.add(corpoterminal)
+
+    let ecraterminal = new THREE.Mesh(
+        new THREE.BoxGeometry(6, 4, 1),
+        new THREE.MeshPhongMaterial({
+            //FIXME: TEMPORARY COLORS
+            color: 0x323232,
+        })
+    )
+    ecraterminal.position.set(0, 1, 1)
+    ecraterminal.receiveShadow = true;
+    portaoESTerminal.add(ecraterminal)
+
+    //leitor infravermelhos
+    let leitorTerminal = new THREE.Mesh(
+        new THREE.BoxGeometry(1, 2, 0.5),
+        new THREE.MeshPhongMaterial({
+            //FIXME: TEMPORARY COLORS
+            color: 0x5d0011,
+        })
+    )
+
+    leitorTerminal.position.set(2, -3, 1)
+    portaoESTerminal.add(leitorTerminal)
+
+    // A case do leitor infravermelhos
+    leitorTerminal = new THREE.Mesh(
+        new THREE.BoxGeometry(2, 3, 0.5),
+        new THREE.MeshPhongMaterial({
+            //FIXME: TEMPORARY COLORS
+            color: 0x000000,
+        })
+    )
+
+    leitorTerminal.receiveShadow = true;
+    leitorTerminal.position.set(2, -3, 0.9)
+    portaoESTerminal.add(leitorTerminal)
+
+    //Para dar o ticket
+    leitorTerminal = new THREE.Mesh(
+        new THREE.PlaneGeometry(2, 0.1, 32),
+        new THREE.MeshPhongMaterial({
+            //FIXME: TEMPORARY COLORS
+            color: 0x000000,
+            side: THREE.DoubleSide
+        })
+    )
+    leitorTerminal.receiveShadow = true;
+    leitorTerminal.position.set(-1.5, -3, 1.1)
+    portaoESTerminal.add(leitorTerminal)
+
+
+    portaoESTerminal.position.set(-100, 10, -10)
+    portaoObjeto.add(portaoESTerminal);
+    portaoESTerminal.position.set(-130, 14, -189)
+    portaoObjeto.add(portaoESTerminal);
+
+    let portaoETerminal = new THREE.Object3D();
+    portaoETerminal.copy(portaoESTerminal, true);
+    portaoObjeto.add(portaoETerminal);
+    portaoETerminal.rotateY(Math.PI);
+    portaoETerminal.position.set(-180, 14, -101);
+
+
     scene.add(portaoObjeto);
 
-    console.log("Parking lot criado com sucesso")
 
     // Linhas do parque de estacionamento
     let areaEstacionamento = new THREE.Object3D();
     let areaEstacionamento2 = new THREE.Object3D();
     // Criação do modelo do espaço do parque
-    let n_linhas = 3, linha, linha_geometry, linha_material;
-    for(let i=0; i<n_linhas; i++){
-        linha_geometry = new THREE.PlaneGeometry(i%2==0?40:2,i%2==0?2:32);
-        linha_material = new THREE.MeshPhongMaterial({color: 0xf4f4f4});
+    let n_linhas = 3,
+        linha, linha_geometry, linha_material;
+    for (let i = 0; i < n_linhas; i++) {
+        linha_geometry = new THREE.PlaneGeometry(i % 2 == 0 ? 40 : 2, i % 2 == 0 ? 2 : 32);
+        linha_material = new THREE.MeshPhongMaterial({
+            color: 0xf4f4f4
+        });
         linha = new THREE.Mesh(linha_geometry, linha_material);
         linha.receiveShadow = true;
         linha.rotation.x = -Math.PI / 2;
-        linha.position.set(i%2==0?-160:-180,1.05,i%2==0?(i==0?180:150):165);
+        linha.position.set(i % 2 == 0 ? -160 : -180, 1.05, i % 2 == 0 ? (i == 0 ? 180 : 150) : 165);
         areaEstacionamento.add(linha);
     }
     scene.add(areaEstacionamento);
     let test = new THREE.Object3D;
-    for(let i=0; i<8;i++){
+    for (let i = 0; i < 8; i++) {
         let areaEstacionamentoCopia = new THREE.Object3D();
         areaEstacionamentoCopia.copy(areaEstacionamento, true);
-        areaEstacionamento.position.set(0, 0, -30*(i+1));
+        areaEstacionamento.position.set(0, 0, -30 * (i + 1));
         test.add(areaEstacionamentoCopia);
     }
     scene.add(test);
     // Criação do modelo do espaço do parque 2
-    let n_linhas2 = 3, linha2, linha_geometry2, linha_material2;
-    for(let i=0; i<n_linhas2; i++){
-        linha_geometry2 = new THREE.PlaneGeometry(i%2==0?40:2,i%2==0?2:32);
-        linha_material2 = new THREE.MeshPhongMaterial({color: 0xf4f4f4});
+    let n_linhas2 = 3,
+        linha2, linha_geometry2, linha_material2;
+    for (let i = 0; i < n_linhas2; i++) {
+        linha_geometry2 = new THREE.PlaneGeometry(i % 2 == 0 ? 40 : 2, i % 2 == 0 ? 2 : 32);
+        linha_material2 = new THREE.MeshPhongMaterial({
+            color: 0xf4f4f4
+        });
         linha2 = new THREE.Mesh(linha_geometry2, linha_material2);
         linha2.receiveShadow = true;
         linha2.rotation.x = -Math.PI / 2;
-        linha2.position.set(i%2==0?-30:-10,1.05,i%2==0?(i==0?180:150):165);
+        linha2.position.set(i % 2 == 0 ? -30 : -10, 1.05, i % 2 == 0 ? (i == 0 ? 180 : 150) : 165);
         areaEstacionamento2.add(linha2);
     }
     scene.add(areaEstacionamento2);
     let test2 = new THREE.Object3D;
-    for(let i=0; i<8;i++){
+    for (let i = 0; i < 8; i++) {
         let areaEstacionamentoCopia2 = new THREE.Object3D();
         areaEstacionamentoCopia2.copy(areaEstacionamento2, true);
-        areaEstacionamento2.position.set(0, 0, -30*(i+1));
+        areaEstacionamento2.position.set(0, 0, -30 * (i + 1));
         test2.add(areaEstacionamentoCopia2);
     }
-    scene.add(test2); 
+    scene.add(test2);
 
 
-    //TODO:LINHAS DO PARQUE CARGA E DESCARGA
 
     /*let linhaDescarga = new THREE.Object3D();
     let geometriaLinha1 = new THREE.PlaneGeometry(170, 2, 32) // |
@@ -220,10 +352,10 @@ function areaJogavel() {
     linhaDescarga.position.set(200, 1.1, -40)
     scene.add(linhaDescarga)*/
 
-    //Road Lamps
+    //Lampadas
 
     //Objeto 3D
-    let posteIluminacaoMod = new THREE.Object3D();
+    posteIluminacaoMod = new THREE.Object3D();
 
     // Construido por Peças
     //Poste
@@ -231,7 +363,7 @@ function areaJogavel() {
         new THREE.CylinderGeometry(0.5, 1, 44, 32),
         new THREE.MeshPhongMaterial({
             //FIXME: TEMPORARY COLORS
-            color: 0x271D1D,
+            color: 0x5c5656,
         })
     );
     peca.receiveShadow = true;
@@ -239,10 +371,10 @@ function areaJogavel() {
     posteIluminacaoMod.add(peca)
     //O conector entre o poste e a lampada
     peca = new THREE.Mesh(
-        new THREE.BoxGeometry(9, 1.5, 1),
+        new THREE.BoxGeometry(14, 1.5, 1),
         new THREE.MeshPhongMaterial({
             //FIXME: TEMPORARY COLORS
-            color: 0x271D1D,
+            color: 0x5c5656,
         })
     );
     peca.receiveShadow = true;
@@ -256,16 +388,16 @@ function areaJogavel() {
             new THREE.CylinderGeometry(1, 3, 5, 32),
             new THREE.MeshPhongMaterial({
                 //FIXME: TEMPORARY COLORS
-                color: 0x271D1D,
+                color: 0x5c5656,
             })
         );
         peca.receiveShadow = true;
         peca.castShadow = true;
-        peca.position.set(-5, 20, 0)
+        peca.position.set(-8, 20, 0)
         posteIluminacaoMod.add(peca);
     }
 
-    peca.position.set(5, 20, 0)
+    peca.position.set(8, 20, 0)
 
     for (let i = 0; i < 2; i++) {
         peca = new THREE.Mesh(
@@ -278,124 +410,154 @@ function areaJogavel() {
         );
         peca.receiveShadow = true;
         peca.castShadow = true;
-        peca.position.set(-5, 19, 0)
+        peca.position.set(-8, 19.6, 0)
         posteIluminacaoMod.add(peca);
     }
-    peca.position.set(5, 19, 0)
-    posteIluminacaoMod.position.set(-50, 22, 40)
+    peca.position.set(8, 19.6, 0)
+    posteIluminacaoMod.position.set(-50, 23, 40)
     scene.add(posteIluminacaoMod)
 
-    let posteIluminacaoCop = new THREE.Object3D();
-    posteIluminacaoCop.copy(posteIluminacaoMod, true)
-    posteIluminacaoCop.position.set(-50, 22, 100)
-    scene.add(posteIluminacaoCop);
+    console.log("Parking lot criado com sucesso")
+
 }
 // Função para a criação da loja
-function criarLoja(){
+function criarLoja() {
     let baseLoja, paredeLoja, telhadoLoja, frontalLoja, vidroLoja, interiorLoja, portaLoja, anuncioLoja, garagemLoja;
     // Base da Loja
     let baseLoja_g = new THREE.BoxGeometry(200, 0.8, 200);
-    let baseLoja_m = new THREE.MeshPhongMaterial({color: 0xf2b716});
+    let baseLoja_m = new THREE.MeshPhongMaterial({
+        color: 0xf2b716
+    });
     baseLoja = new THREE.Mesh(baseLoja_g, baseLoja_m);
     baseLoja.position.set(100, 0.6, 100);
     scene.add(baseLoja);
     // Parede da Loja
     paredeLoja = new THREE.Object3D();
-        // Parede Exterior
-        for(let i=0; i<3; i++){
-            let ex_paredeLoja_g = new THREE.BoxGeometry(i%2==0?190:10, 40, i%2==0?10:200);
-            let ex_paredeLoja_m = new THREE.MeshPhongMaterial({color: 0xf2b716});
-            let ex_paredeLoja = new THREE.Mesh(ex_paredeLoja_g, ex_paredeLoja_m);
-            ex_paredeLoja.position.set(i%2==0?105:195, 21,i%2==0?(i==0?5:195):100);
-            paredeLoja.add(ex_paredeLoja);
-        }
-        // Parede Interior
-        let in_paredeLoja_g = new THREE.BoxGeometry(10, 40, 180);
-        let in_paredeLoja_m = new THREE.MeshPhongMaterial({color: 0xf2b716});
-        let in_paredeLoja = new THREE.Mesh(in_paredeLoja_g, in_paredeLoja_m);
-        in_paredeLoja.position.set(115, 21, 100);
-        paredeLoja.add(in_paredeLoja);
+    // Parede Exterior
+    for (let i = 0; i < 3; i++) {
+        let ex_paredeLoja_g = new THREE.BoxGeometry(i % 2 == 0 ? 190 : 10, 40, i % 2 == 0 ? 10 : 200);
+        let ex_paredeLoja_m = new THREE.MeshPhongMaterial({
+            color: 0xf2b716
+        });
+        let ex_paredeLoja = new THREE.Mesh(ex_paredeLoja_g, ex_paredeLoja_m);
+        ex_paredeLoja.position.set(i % 2 == 0 ? 105 : 195, 21, i % 2 == 0 ? (i == 0 ? 5 : 195) : 100);
+        paredeLoja.add(ex_paredeLoja);
+    }
+    // Parede Interior
+    let in_paredeLoja_g = new THREE.BoxGeometry(10, 40, 180);
+    let in_paredeLoja_m = new THREE.MeshPhongMaterial({
+        color: 0xf2b716
+    });
+    let in_paredeLoja = new THREE.Mesh(in_paredeLoja_g, in_paredeLoja_m);
+    in_paredeLoja.position.set(115, 21, 100);
+    paredeLoja.add(in_paredeLoja);
     scene.add(paredeLoja);
     // Telhado da Loja
     let telhadoLoja_g = new THREE.BoxGeometry(210, 4, 210);
-    let telhadoLoja_m = new THREE.MeshPhongMaterial({color: 0x202020});
+    let telhadoLoja_m = new THREE.MeshPhongMaterial({
+        color: 0x202020
+    });
     telhadoLoja = new THREE.Mesh(telhadoLoja_g, telhadoLoja_m);
     telhadoLoja.position.set(100, 43, 100);
     scene.add(telhadoLoja);
     // Frontal da Loja
     frontalLoja = new THREE.Object3D();
-        // Postes
-        for(let i=0; i<3; i++){
-            let poste_frontalLoja_g = new THREE.BoxGeometry(10, 40, i==1?60:10);
-            let poste_frontalLoja_m = new THREE.MeshPhongMaterial({color: 0xf2b716});
-            let poste_frontalLoja = new THREE.Mesh(poste_frontalLoja_g, poste_frontalLoja_m);
-            poste_frontalLoja.position.set(5, 21, i%2==0?(i==0?5:45):170);
-            frontalLoja.add(poste_frontalLoja);
-        }
-        // Parte Superior
-        let sup_frontalLoja_g = new THREE.BoxGeometry(10, 10, 180);
-        let sup_frontalLoja_m = new THREE.MeshPhongMaterial({color: 0xf2b716});
-        let sup_frontalLoja = new THREE.Mesh(sup_frontalLoja_g, sup_frontalLoja_m);
-        sup_frontalLoja.position.set(5, 36, 100);
-        frontalLoja.add(sup_frontalLoja);
-        // Parte Inferior
-        let inf_frontalLoja_g = new THREE.BoxGeometry(10, 4, 90);
-        let inf_frontalLoja_m = new THREE.MeshPhongMaterial({color: 0xf2b716});
-        let inf_frontalLoja = new THREE.Mesh(inf_frontalLoja_g, inf_frontalLoja_m);
-        inf_frontalLoja.position.set(5, 3, 95);
-        frontalLoja.add(inf_frontalLoja);
+    // Postes
+    for (let i = 0; i < 3; i++) {
+        let poste_frontalLoja_g = new THREE.BoxGeometry(10, 40, i == 1 ? 60 : 10);
+        let poste_frontalLoja_m = new THREE.MeshPhongMaterial({
+            color: 0xf2b716
+        });
+        let poste_frontalLoja = new THREE.Mesh(poste_frontalLoja_g, poste_frontalLoja_m);
+        poste_frontalLoja.position.set(5, 21, i % 2 == 0 ? (i == 0 ? 5 : 45) : 170);
+        frontalLoja.add(poste_frontalLoja);
+    }
+    // Parte Superior
+    let sup_frontalLoja_g = new THREE.BoxGeometry(10, 10, 180);
+    let sup_frontalLoja_m = new THREE.MeshPhongMaterial({
+        color: 0xf2b716
+    });
+    let sup_frontalLoja = new THREE.Mesh(sup_frontalLoja_g, sup_frontalLoja_m);
+    sup_frontalLoja.position.set(5, 36, 100);
+    frontalLoja.add(sup_frontalLoja);
+    // Parte Inferior
+    let inf_frontalLoja_g = new THREE.BoxGeometry(10, 4, 90);
+    let inf_frontalLoja_m = new THREE.MeshPhongMaterial({
+        color: 0xf2b716
+    });
+    let inf_frontalLoja = new THREE.Mesh(inf_frontalLoja_g, inf_frontalLoja_m);
+    inf_frontalLoja.position.set(5, 3, 95);
+    frontalLoja.add(inf_frontalLoja);
     scene.add(frontalLoja);
     // Vidro da Loja
-        vidroLoja = new THREE.Object3D();
-        // Armação
-        let n_armacoes = 4, armacao, armacao_g, armacao_m;
-        for(let i=0; i<n_armacoes; i++){
-            armacao_g = new THREE.BoxGeometry(6, i%2==0?2:26, i%2==0?90:2);
-            armacao_m = new THREE.MeshPhongMaterial({color: 0x202020});
-            armacao = new THREE.Mesh(armacao_g, armacao_m);
-            armacao.position.set(5,i%2==0?(i==0?6:30):19,i%2==0?95:(i==1?51:139));
-            vidroLoja.add(armacao);
-        }
-        // Vidro
-        let vidro_g = new THREE.BoxGeometry(2, 26, 86);
-        let vidro_m = new THREE.MeshPhongMaterial({color: 0x9ce9ff, transparent: true, opacity: 0.8});
-        let vidro = new THREE.Mesh(vidro_g, vidro_m);
-        vidro.position.set(5, 19, 95);
-        vidroLoja.add(vidro);
+    vidroLoja = new THREE.Object3D();
+    // Armação
+    let n_armacoes = 4,
+        armacao, armacao_g, armacao_m;
+    for (let i = 0; i < n_armacoes; i++) {
+        armacao_g = new THREE.BoxGeometry(6, i % 2 == 0 ? 2 : 26, i % 2 == 0 ? 90 : 2);
+        armacao_m = new THREE.MeshPhongMaterial({
+            color: 0x202020
+        });
+        armacao = new THREE.Mesh(armacao_g, armacao_m);
+        armacao.position.set(5, i % 2 == 0 ? (i == 0 ? 6 : 30) : 19, i % 2 == 0 ? 95 : (i == 1 ? 51 : 139));
+        vidroLoja.add(armacao);
+    }
+    // Vidro
+    let vidro_g = new THREE.BoxGeometry(2, 26, 86);
+    let vidro_m = new THREE.MeshPhongMaterial({
+        color: 0x9ce9ff,
+        transparent: true,
+        opacity: 0.8
+    });
+    let vidro = new THREE.Mesh(vidro_g, vidro_m);
+    vidro.position.set(5, 19, 95);
+    vidroLoja.add(vidro);
     scene.add(vidroLoja);
     // Interior Loja
     interiorLoja = new THREE.Object3D();
-    let n_prateleiras = 12, prateleira, prateleira_g, prateleira_m;
-    for(let i=0; i<(n_prateleiras/3); i++){ //4
-        for(let j=0; j<(n_prateleiras/4); j++){ //3
-            prateleira_g = new THREE.BoxGeometry(10,14,40);
-            prateleira_m = new THREE.MeshPhongMaterial({color: 0x404040});
+    let n_prateleiras = 12,
+        prateleira, prateleira_g, prateleira_m;
+    for (let i = 0; i < (n_prateleiras / 3); i++) { //4
+        for (let j = 0; j < (n_prateleiras / 4); j++) { //3
+            prateleira_g = new THREE.BoxGeometry(10, 14, 40);
+            prateleira_m = new THREE.MeshPhongMaterial({
+                color: 0x404040
+            });
             prateleira = new THREE.Mesh(prateleira_g, prateleira_m);
-            prateleira.position.set(35+(i*20), 8, 40+(j*60));
+            prateleira.position.set(35 + (i * 20), 8, 40 + (j * 60));
             interiorLoja.add(prateleira);
         }
     }
     scene.add(interiorLoja);
     // Porta da Loja
     portaLoja = new THREE.Object3D();
-        // Armação da Porta
-        let n_armacoes_porta = 5, armacao_porta, armacao_porta_g, armacao_porta_m;
-        for(let i=0; i<n_armacoes_porta; i++){
-            armacao_porta_g = new THREE.BoxGeometry(8, i%2==0?30:(i==1?1:2),i%2==0?2:30);
-            armacao_porta_m = new THREE.MeshPhongMaterial({color: 0x202020});
-            armacao_porta = new THREE.Mesh(armacao_porta_g, armacao_porta_m);
-            armacao_porta.position.set(5, i%2==0?16:(i==1?1.5:30),i%2==0?(i==0?11:(i==2?25:39)):25);
-            portaLoja.add(armacao_porta);
-        }
-        // Vidro da Porta
-        let n_vidros_porta = 2, vidro_porta, vidro_porta_g, vidro_porta_m;
-        for(let i=0; i<n_vidros_porta; i++){
-            vidro_porta_g = new THREE.BoxGeometry(2, 27, 12);
-            vidro_porta_m = new THREE.MeshPhongMaterial({color: 0x9ce9ff, transparent: true, opacity: 0.8});
-            vidro_porta = new THREE.Mesh(vidro_porta_g, vidro_porta_m);
-            vidro_porta.position.set(5, 15.5, i==0?18:32);
-            portaLoja.add(vidro_porta);
-        }
+    // Armação da Porta
+    let n_armacoes_porta = 5,
+        armacao_porta, armacao_porta_g, armacao_porta_m;
+    for (let i = 0; i < n_armacoes_porta; i++) {
+        armacao_porta_g = new THREE.BoxGeometry(8, i % 2 == 0 ? 30 : (i == 1 ? 1 : 2), i % 2 == 0 ? 2 : 30);
+        armacao_porta_m = new THREE.MeshPhongMaterial({
+            color: 0x202020
+        });
+        armacao_porta = new THREE.Mesh(armacao_porta_g, armacao_porta_m);
+        armacao_porta.position.set(5, i % 2 == 0 ? 16 : (i == 1 ? 1.5 : 30), i % 2 == 0 ? (i == 0 ? 11 : (i == 2 ? 25 : 39)) : 25);
+        portaLoja.add(armacao_porta);
+    }
+    // Vidro da Porta
+    let n_vidros_porta = 2,
+        vidro_porta, vidro_porta_g, vidro_porta_m;
+    for (let i = 0; i < n_vidros_porta; i++) {
+        vidro_porta_g = new THREE.BoxGeometry(2, 27, 12);
+        vidro_porta_m = new THREE.MeshPhongMaterial({
+            color: 0x9ce9ff,
+            transparent: true,
+            opacity: 0.8
+        });
+        vidro_porta = new THREE.Mesh(vidro_porta_g, vidro_porta_m);
+        vidro_porta.position.set(5, 15.5, i == 0 ? 18 : 32);
+        portaLoja.add(vidro_porta);
+    }
     scene.add(portaLoja);
 }
 //Função para criar as luzes da simulação
@@ -442,16 +604,6 @@ function createLight() {
     }
     luzLampada.position.set(15, 40, 41);
 
-    for (let i = 0; i < 2; i++) {
-        luzLampada = new THREE.SpotLight(0xFFFFFF, 1, 60, Math.PI / 3, 0.80);
-        luzLampada.position.set(5, 40, 100);
-        luzLampada.target.position.set(0, -360, 65);
-        luzLampada.castShadow = true;
-        luzLampada.autoUpdate = true;
-        scene.add(luzLampada);
-        scene.add(luzLampada.target);
-    }
-    luzLampada.position.set(15, 40, 100);
 
     //TODO:Adapt the Lamp Light to the day and night Cycle
     console.log("Luzes criadas com sucesso")
@@ -471,6 +623,7 @@ function sunUpdate() {
             sol.power = solPotencia * 4 * Math.PI;
         } else if (sol.position.z > 0) {
             //Night
+            skyColor = Ox332299;
             sol.position.set(sol.position.x, sol.position.y - 25, sol.position.z - 25);
             solPotencia = 0;
             sol.power = solPotencia * 4 * Math.PI;
@@ -481,6 +634,7 @@ function sunUpdate() {
             sol.power = solPotencia * 4 * Math.PI;
         } else if ((sol.position.z >= -2000 && sol.position.z < 0) && sol.position.y >= 0) {
             //Day
+            skyColor = 0x4488ee;
             sol.position.set(sol.position.x, sol.position.y + 25, sol.position.z + 25);
             solPotencia = solPotencia + 0.0125;
             sol.power = solPotencia * 4 * Math.PI;
