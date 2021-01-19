@@ -1,13 +1,14 @@
 //Todas as variaveis para a simulação
 let scene, renderer, camera;
 let luzDirecional, hemisphereLight;
+let luz_frontal_esq, luz_frontal_dir, luz_traseira_esq, luz_traseira_dir;
 let objetos; 
 let curvaLuz;
 let position = 0;
-var render_stats;
-let posteIluminacaoMod;
 let mudancaCiclo = true;
 let corAmbiente, valorCorRGB = 0;
+let boost = 1;
+let trocar_camera = false;
 let carro = {
     frente: false, direita: false
 };
@@ -17,7 +18,7 @@ window.onload = function init() {
     // Cena
     scene = new THREE.Scene();
     //Camera
-    camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 1, 2000);
+    camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 2000);
     camera.position.set(-400, 350, -100)
     scene.add(camera)
     // Renderer
@@ -38,8 +39,8 @@ window.onload = function init() {
     criarAmbiente()
     areaJogavel()
     criarLoja()
-    createLight()
-    createCar()
+    criarLuzes()
+    criarCarro()
     render()
 }
 // Funçao que cria o ambiente
@@ -69,8 +70,43 @@ function criarAmbiente() {
     // Skybox
     let skybox = new THREE.Mesh(new THREE.SphereGeometry(1000, 1000, 10, 10), new THREE.MeshBasicMaterial({color: 0x59acbd, side: THREE.DoubleSide}));
     scene.add(skybox);
-    // Árvores
-    
+    // Árvores (Isto está a pedreiro)
+    let arvore = new THREE.Object3D();
+    let tronco_g = new THREE.CylinderGeometry(5, 5, 20, 5);
+    let tronco_m = new THREE.MeshPhongMaterial({color: 0x3b2d07, shininess: 0});
+    let tronco = new THREE.Mesh(tronco_g, tronco_m);
+    tronco.position.set(0, 11, 300);
+    tronco.castShadow = true;
+    tronco.receiveShadow = true;
+    arvore.add(tronco);
+    let folhas_g = new THREE.SphereGeometry(18, 12, 12);
+    let folhas_m = new THREE.MeshPhongMaterial({color: 0x5b944d, shininess: 0.1});
+    let folhas = new THREE.Mesh(folhas_g, folhas_m);
+    folhas.position.set(0,34,300);
+    folhas.castShadow = true;
+    folhas.receiveShadow = true;
+    arvore.add(folhas);
+    scene.add(arvore)
+    let arvore2 = new THREE.Object3D();
+    arvore2.copy(arvore, true);
+    arvore2.position.set(100, 0, -600);
+    scene.add(arvore2);
+    let arvore3 = new THREE.Object3D();
+    arvore3.copy(arvore, true);
+    arvore3.position.set(260, 0, -300);
+    scene.add(arvore3);
+    let arvore4 = new THREE.Object3D();
+    arvore4.copy(arvore, true);
+    arvore4.position.set(-260, 0, -400);
+    scene.add(arvore4);
+    let arvore5 = new THREE.Object3D();
+    arvore5.copy(arvore, true);
+    arvore5.position.set(-300, 0, -680);
+    scene.add(arvore5);
+    let arvore6 = new THREE.Object3D();
+    arvore6.copy(arvore, true);
+    arvore6.position.set(200, 0, 100);
+    scene.add(arvore6);
 }
 
 // Função para criar a área onde o utilizador vai movimentar o carro
@@ -80,7 +116,7 @@ function areaJogavel() {
     // Textura do Bump Map do Pavimento
     let bumpMapPavimento = new THREE.TextureLoader().load("./Textures/Road_bump_map_temp.jpg");
     // Material do Pavimento
-    pavimento_material = new THREE.MeshPhongMaterial({color: 0x101010, bumpMap: bumpMapPavimento, bumpScale: 0.08});
+    pavimento_material = new THREE.MeshPhongMaterial({color: 0x101010, bumpMap: bumpMapPavimento, bumpScale: 0.08, shininess: 0});
     // Zona do Parque de Estacionamento
     pavimento = new THREE.Mesh(new THREE.BoxGeometry(200, 0.8, 400), pavimento_material);
     pavimento.position.set(-100, 0.6, 0);
@@ -195,8 +231,6 @@ function areaJogavel() {
         portaoETerminal.rotateY(Math.PI);
         portaoETerminal.position.set(-186, 14, -111);
     scene.add(terminal);
-
-
     // Linhas do parque de estacionamento
     let areaEstacionamento = new THREE.Object3D();
     let areaEstacionamento2 = new THREE.Object3D();
@@ -212,14 +246,14 @@ function areaJogavel() {
         areaEstacionamento.add(linha);
     }
     scene.add(areaEstacionamento);
-    let test = new THREE.Object3D;
+    let lugaresEstacionamento = new THREE.Object3D;
     for (let i = 0; i < 8; i++) {
         let areaEstacionamentoCopia = new THREE.Object3D();
         areaEstacionamentoCopia.copy(areaEstacionamento, true);
         areaEstacionamento.position.set(0, 0, -30 * (i + 1));
-        test.add(areaEstacionamentoCopia);
+        lugaresEstacionamento.add(areaEstacionamentoCopia);
     }
-    scene.add(test);
+    scene.add(lugaresEstacionamento);
     // Criação do modelo do espaço do parque 2
     let n_linhas2 = 3, linha2, linha_geometry2, linha_material2;
     for (let i = 0; i < n_linhas2; i++) {
@@ -232,40 +266,23 @@ function areaJogavel() {
         areaEstacionamento2.add(linha2);
     }
     scene.add(areaEstacionamento2);
-    let test2 = new THREE.Object3D;
+    let lugaresEstacionamento2 = new THREE.Object3D;
     for (let i = 0; i < 8; i++) {
         let areaEstacionamentoCopia2 = new THREE.Object3D();
         areaEstacionamentoCopia2.copy(areaEstacionamento2, true);
         areaEstacionamento2.position.set(0, 0, -30 * (i + 1));
-        test2.add(areaEstacionamentoCopia2);
+        lugaresEstacionamento2.add(areaEstacionamentoCopia2);
     }
-    scene.add(test2);
-
-    //Lampadas
-
-    //Objeto 3D
-    posteIluminacaoMod = new THREE.Object3D();
-
-    // Construido por Peças
-    //Poste
-    let peca = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.5, 1, 44, 32),
-        new THREE.MeshPhongMaterial({
-            //FIXME: TEMPORARY COLORS
-            color: 0x5c5656,
-        })
-    );
+    scene.add(lugaresEstacionamento2);
+    // Poste de iluminação
+    let posteIluminacaoMod = new THREE.Object3D();
+    // Poste
+    let peca = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 44, 32), new THREE.MeshPhongMaterial({color: 0x5c5656, shininess: 0}));
     peca.receiveShadow = true;
     peca.castShadow = true;
-    posteIluminacaoMod.add(peca)
-    //O conector entre o poste e a lampada
-    peca = new THREE.Mesh(
-        new THREE.BoxGeometry(14, 1.5, 1),
-        new THREE.MeshPhongMaterial({
-            //FIXME: TEMPORARY COLORS
-            color: 0x5c5656,
-        })
-    );
+    posteIluminacaoMod.add(peca);
+    // Conector entre o poste e lampada
+    peca = new THREE.Mesh(new THREE.BoxGeometry(14, 1.5, 1), new THREE.MeshPhongMaterial({color: 0x5c5656}));
     peca.receiveShadow = true;
     peca.castShadow = true;
     peca.position.set(0, 20, 0)
@@ -273,50 +290,37 @@ function areaJogavel() {
     //Lampada
     for (let i = 0; i < 2; i++) {
         //Caixa da Lampada
-        peca = new THREE.Mesh(
-            new THREE.CylinderGeometry(1, 3, 5, 32),
-            new THREE.MeshPhongMaterial({
-                //FIXME: TEMPORARY COLORS
-                color: 0x5c5656,
-            })
-        );
+        peca = new THREE.Mesh(new THREE.CylinderGeometry(1, 3, 5, 32), new THREE.MeshPhongMaterial({color: 0x5c5656}));
         peca.receiveShadow = true;
         peca.castShadow = true;
-        peca.position.set(-8, 20, 0)
+        peca.position.set(i==0?-8:8, 20, 0)
         posteIluminacaoMod.add(peca);
     }
-
-    peca.position.set(8, 20, 0)
-
     for (let i = 0; i < 2; i++) {
-        peca = new THREE.Mesh(
-            new THREE.CylinderGeometry(1, 2.5, 5, 32),
-            new THREE.MeshLambertMaterial({
-                //FIXME: TEMPORARY COLORS
-                color: 0x271D1D,
-                emissive: 0xF1D71D,
-            })
-        );
+        peca = new THREE.Mesh(new THREE.CylinderGeometry(1, 2.5, 5, 32), new THREE.MeshLambertMaterial({color: 0x271D1D, emissive: 0xF1D71D}));
         peca.receiveShadow = true;
         peca.castShadow = true;
         peca.position.set(-8, 19.6, 0)
         posteIluminacaoMod.add(peca);
     }
-    peca.position.set(8, 19.6, 0)
-    posteIluminacaoMod.position.set(-50, 23, 40)
-    scene.add(posteIluminacaoMod)
-
-    console.log("Parking lot criado com sucesso")
-
+    peca.position.set(8, 19.6, 0);
+    posteIluminacaoMod.rotation.y = Math.PI/2;
+    posteIluminacaoMod.position.set(-180, 23, 45);
+    scene.add(posteIluminacaoMod);
+    let n_copias_poste_iluminacao = 2, copia_poste_iluminacao;
+    for (let i = 0; i < n_copias_poste_iluminacao; i++){
+        copia_poste_iluminacao = new THREE.Object3D();
+        copia_poste_iluminacao.copy(posteIluminacaoMod, true);
+        copia_poste_iluminacao.position.set(-180, 23, i == 1? 140 : -40);
+        scene.add(copia_poste_iluminacao);
+    }
 }
 // Função para a criação da loja
 function criarLoja() {
-    let baseLoja, paredeLoja, telhadoLoja, frontalLoja, vidroLoja, interiorLoja, portaLoja, anuncioLoja, garagemLoja;
+    let baseLoja, paredeLoja, telhadoLoja, frontalLoja, vidroLoja, interiorLoja, portaLoja;
     // Base da Loja
     let baseLoja_g = new THREE.BoxGeometry(200, 0.8, 200);
-    let baseLoja_m = new THREE.MeshPhongMaterial({
-        color: 0xf2b716
-    });
+    let baseLoja_m = new THREE.MeshPhongMaterial({color: 0xf2b716});
     baseLoja = new THREE.Mesh(baseLoja_g, baseLoja_m);
     baseLoja.position.set(100, 0.6, 100);
     baseLoja.receiveShadow = true;
@@ -441,7 +445,7 @@ function criarLoja() {
     scene.add(portaLoja);
 }
 //Função para criar as luzes da simulação
-function createLight() {
+function criarLuzes() {
     hemisphereLight = new THREE.HemisphereLight(0x202020, 0x202020, 0.9);
     hemisphereLight.visible = true;
     scene.add(hemisphereLight);
@@ -453,7 +457,7 @@ function createLight() {
     // Luz direcional (Sombras)
     luzDirecional.castShadow = true;
     luzDirecional.autoUpdate = true;
-    luzDirecional.shadow.camera = new THREE.OrthographicCamera(-500, 500, 500, -500, 0.5, 1000);
+    luzDirecional.shadow.camera = new THREE.OrthographicCamera(-1000, 1000, 50, -500, 0.1, 1200);
     luzDirecional.shadow.bias = 0.00020;
     luzDirecional.shadow.camera.near = 1;
     luzDirecional.shadow.camera.far = 3000;
@@ -464,9 +468,10 @@ function createLight() {
         2000, 2000,
         0, 2 * Math.PI
     );
+    // Luzes do carro 
 }
 
-function sunUpdate() {
+function luzesAtualizar() {
     if (position <= 1) {
         luzDirecional.position.x = curvaLuz.getPointAt(position).x
         luzDirecional.position.y = curvaLuz.getPointAt(position).y
@@ -486,18 +491,22 @@ function sunUpdate() {
         }
     }
     corAmbiente = new THREE.Color(valorCorRGB, valorCorRGB, valorCorRGB);
-    scene.fog = new THREE.Fog(corAmbiente, 0, 1000 + 3000*valorCorRGB); // Mudar de 1000 para 200 mais tarde
+    scene.fog = new THREE.Fog(corAmbiente, 0, 200 + 2000*valorCorRGB);
 }
 
-function createCar(){
+function criarCarro(){
     // Cores
     let cor_1 = 0xf01000; // Cor primária - usada no carcaça do carro
     let cor_2 = 0x202020; // Cor secundária - usada noutros elementos pertencentes ao carro
     let cor_3 = 0xdeefff; // Cor terciária - usada nos vidros do veículo
     let cor_4 = 0x404040; // Cor das rodas
+    // Materiais
+    let cor_1_material = new THREE.MeshPhongMaterial({color: cor_1, shininess: 0.1});
+    let cor_2_material = new THREE.MeshPhongMaterial({color: cor_2, shininess: 0.1});
+    let cor_3_material = new THREE.MeshPhongMaterial({color: cor_3, shininess: 0.1});
     // Carro 
     carro = new THREE.Object3D();
-    carro.position.set(50, 10, -50);
+    carro.position.set(-90, 10, 125);
     carro.rotation.y = -Math.PI/2;
     scene.add(carro);
         // Carcaça 
@@ -506,25 +515,22 @@ function createCar(){
         carro.add(carcaca);
             // Carcaça central
             let Cx0_g = new THREE.BoxGeometry (30, 4, 16);
-            let Cx0_m = new THREE.MeshPhongMaterial({color: cor_1});
-            let Cx0 = new THREE.Mesh (Cx0_g, Cx0_m);
+            let Cx0 = new THREE.Mesh (Cx0_g, cor_1_material);
             Cx0.position.set(0, 0, 0);
             carcaca.add(Cx0);
             // Para-choques
-            let n_Cx1 = 2, Cx1_g, Cx1_m, Cx1;
+            let n_Cx1 = 2, Cx1_g, Cx1;
             for (let i=0; i<n_Cx1; i++){
                 Cx1_g = new THREE.BoxGeometry (2, 2, 16)
-                Cx1_m = new THREE.MeshPhongMaterial({color: cor_1});
-                Cx1 = new THREE.Mesh(Cx1_g, Cx1_m);
+                Cx1 = new THREE.Mesh(Cx1_g, cor_1_material);
                 Cx1.position.set(i%2==0?-14:14, -3, 0);
                 carcaca.add(Cx1);
             }
             // Carcaça associada a área das rodas
-            let n_Cx2 = 4, Cx2_g, Cx2_m, Cx2;
+            let n_Cx2 = 4, Cx2_g, Cx2;
             for(let i=0; i<n_Cx2; i++){
                 Cx2_g = new THREE.BoxGeometry(1,2,16);
-                Cx2_m = new THREE.MeshPhongMaterial({color: cor_1});
-                Cx2 = new THREE.Mesh(Cx2_g, Cx2_m);
+                Cx2 = new THREE.Mesh(Cx2_g, cor_1_material);
                 Cx2.position.set(i%2==0?(i==0?-12.5:5.5):(i==1?12.5:-5.5), -3, 0);
                 Cx2_g.vertices[(i%2==0?2:6)].set(i%2==0?-0.5:0.5, -1, i%2==0?8:-8);
                 Cx2_g.vertices[(i%2==0?3:7)].set(i%2==0?-0.5:0.5, -1, i%2==0?-8:8);
@@ -532,31 +538,27 @@ function createCar(){
             }
             // Carcaça inferior
             let Cx3_g = new THREE.BoxGeometry (10, 2, 16);
-            let Cx3_m = new THREE.MeshPhongMaterial({color: cor_1});
-            let Cx3 = new THREE.Mesh (Cx3_g, Cx3_m);
+            let Cx3 = new THREE.Mesh (Cx3_g, cor_1_material);
             Cx3.position.set(0,-3,0)
             carcaca.add(Cx3);
             // Carcaça superior
             let Cx4_g = new THREE.BoxGeometry (10, 7, 16);
-            let Cx4_m = new THREE.MeshPhongMaterial({color: cor_1});
-            let Cx4 = new THREE.Mesh (Cx4_g, Cx4_m);
+            let Cx4 = new THREE.Mesh (Cx4_g, cor_1_material);
             Cx4.position.set(-1,5.5,0)
             Cx4_g.vertices[5].set(-3,3.5,8);
             Cx4_g.vertices[4].set(-3,3.5,-8);
             carcaca.add(Cx4);
             // Bagagem
-            let n_Cx5 = 3, Cx5_g, Cx5_m, Cx5;
+            let n_Cx5 = 3, Cx5_g, Cx5;
             for(let i=0; i<n_Cx5; i++){
             Cx5_g = new THREE.BoxGeometry((i%2==0?11:2), 2, (i%2==0?2:12));
-            Cx5_m = new THREE.MeshPhongMaterial({color: cor_1});
-            Cx5 = new THREE.Mesh(Cx5_g, Cx5_m);
+            Cx5 = new THREE.Mesh(Cx5_g, cor_1_material);
             Cx5.position.set((i%2==0?9.5:14), 3, (i%2==0?(i==0?7:-7):0));
             carcaca.add(Cx5);
             }
             // Capô
             let Cx6_g = new THREE.BoxGeometry(10,2,16);
-            let Cx6_m = new THREE.MeshPhongMaterial({color: cor_1});
-            let Cx6 = new THREE.Mesh(Cx6_g, Cx6_m);
+            let Cx6 = new THREE.Mesh(Cx6_g, cor_1_material);
             Cx6.position.set(-10,3,0);
             Cx6_g.vertices[0].set(5,0.5,7);
             Cx6_g.vertices[1].set(5,0.5,-7);
@@ -568,20 +570,18 @@ function createCar(){
         kit_carcaca.position.set(0, 0, 0);
         carro.add(kit_carcaca);
             // Barras Centrais
-            let n_KCx0 = 2, KCx0_g, KCx0_m, KCx0;
+            let n_KCx0 = 2, KCx0_g, KCx0;
             for(let i=0; i<n_KCx0; i++){
             KCx0_g = new THREE.BoxGeometry(10, 1, 1);
-            KCx0_m = new THREE.MeshPhongMaterial({color: cor_2});
-            KCx0 = new THREE.Mesh(KCx0_g, KCx0_m);
+            KCx0 = new THREE.Mesh(KCx0_g, cor_2_material);
             KCx0.position.set(0, -3.5, (i==0?8.5:-8.5));
             kit_carcaca.add(KCx0);
             }
             // Barras Superior a Roda
-            let n_KCx1 = 4, KCx1_g, KCx1_m, KCx1;
+            let n_KCx1 = 4, KCx1_g, KCx1;
             for (let i = 0; i<n_KCx1; i++){
             KCx1_g = new THREE.BoxGeometry(6,1,1);
-            KCx1_m = new THREE.MeshPhongMaterial({color: cor_2});
-            KCx1 = new THREE.Mesh(KCx1_g, KCx1_m);
+            KCx1 = new THREE.Mesh(KCx1_g, cor_2_material);
             KCx1_g.vertices[0].set(3.5,0.5,0.5);
             KCx1_g.vertices[1].set(3.5,0.5,-0.5);
             KCx1_g.vertices[4].set(-3.5,0.5,-0.5);
@@ -590,21 +590,19 @@ function createCar(){
             kit_carcaca.add(KCx1);
             }
             // Barras Inferiores (Extremos - Frontal e Traseira)
-            let n_KCx2 = 4, KCx2_g, KCx2_m, KCx2;
+            let n_KCx2 = 4, KCx2_g, KCx2;
             for (let i = 0; i<n_KCx2; i++){
             KCx2_g = new THREE.BoxGeometry(2,1,1);
-            KCx2_m = new THREE.MeshPhongMaterial({color: cor_2});
-            KCx2 = new THREE.Mesh(KCx2_g, KCx2_m);
+            KCx2 = new THREE.Mesh(KCx2_g, cor_2_material);
             KCx2.position.set((i%2==0?-14:14), -3.5,(i<2?8.5:-8.5));
             kit_carcaca.add(KCx2);
             }
             // Barras Diagonais a Roda
-            let n_KCx3 = 8, KCx3_g, KCx3_m, KCx3;
+            let n_KCx3 = 8, KCx3_g, KCx3;
             for (let i=0; i<(n_KCx3/2); i++){
                 for(let j=0; j<(n_KCx3/4); j++){
                 KCx3_g = new THREE.BoxGeometry(1,3,1);
-                KCx3_m = new THREE.MeshPhongMaterial({color: cor_2});
-                KCx3 = new THREE.Mesh(KCx3_g, KCx3_m);
+                KCx3 = new THREE.Mesh(KCx3_g, cor_2_material);
                 KCx3.position.set((i%2==0?(i==0?-13.5:4.5):(i==1?-4.5:13.5)), -2.5, (j%2==0?8.5:-8.5));
                 KCx3_g.vertices[0].set((i%2==0?1.5:-1), (i%2==0?0.5:1.5), 0.5);
                 KCx3_g.vertices[1].set((i%2==0?1.5:-1), (i%2==0?0.5:1.5), -0.5);
@@ -614,11 +612,10 @@ function createCar(){
                 }
             }
             // Barras dos para-choques
-            let n_KCx4 = 2, KCx4_g, KCx4_m, KCx4;
+            let n_KCx4 = 2, KCx4_g, KCx4;
             for (let i=0; i<n_KCx4; i++){
             KCx4_g = new THREE.BoxGeometry(1,1,18);
-            KCx4_m = new THREE.MeshPhongMaterial({color: cor_2});
-            KCx4 = new THREE.Mesh(KCx4_g, KCx4_m);
+            KCx4 = new THREE.Mesh(KCx4_g, cor_2_material);
             KCx4.position.set((i==0?-15.5:15.5), -3.5, 0);
             kit_carcaca.add(KCx4);
             }
@@ -627,36 +624,33 @@ function createCar(){
         outras_pecas.position.set(0, 0, 0);
         carro.add(outras_pecas);
             // Maçaneta da Porta do Carro
-            let n_OPx0 = 2, OPx0_g, OPx0_m, OPx0;
+            let n_OPx0 = 2, OPx0_g, OPx0;
             for (let i=0; i<n_OPx0;i++){
             OPx0_g = new THREE.BoxGeometry(1.6,0.6,0.6);
-            OPx0_m = new THREE.MeshPhongMaterial({color: cor_2});
-            OPx0 = new THREE.Mesh (OPx0_g, OPx0_m);
+            OPx0 = new THREE.Mesh (OPx0_g, cor_2_material);
             OPx0.position.set(-3.2,2,(i%2==0?8.3:-8.3));
             outras_pecas.add(OPx0);
             }
             // Faróis Frontais
-            let n_OPx1 = 8, OPx1_g, OPx1_m, OPx1;
+            let n_OPx1 = 8, OPx1_g, OPx1;
             for(let i=0; i<(n_OPx1/4); i++){
                 for(let j=0; j<(n_OPx1/4); j++){
                     for (let k=0; k<(n_OPx1/4);k++){
                     OPx1_g = new THREE.BoxGeometry(0.4,(k==0?0.4:3),(k==0?3:0.4));
-                    OPx1_m = new THREE.MeshPhongMaterial({color: cor_2});
-                    OPx1 = new THREE.Mesh (OPx1_g, OPx1_m);
+                    OPx1 = new THREE.Mesh (OPx1_g, cor_2_material);
                     OPx1.position.set(-15.2,(k==0?(i%2==0?0.8:-1.8):-0.5),(k==0?(j%2==0?5.5:-5.5):(i%2==0?(j%2==0?6.8:4.2):(j%2==0?-6.8:-4.2))));
                     outras_pecas.add(OPx1);
                     }         
                 }
             }
             // Faróis Traseiros
-            let n_OPx2 = 10, OPx2_g, OPx2_m, OPx2;
+            let n_OPx2 = 10, OPx2_g, OPx2;
             for (let i=0; i<(n_OPx2/5); i++){ // Horizontal ou Vertical
                 if(i==0){ // Horizontal
                     for (let j=0; j<3; j++){ // 3 Barras
                         for (let k=0; k<(n_OPx2/5); k++){ // 2 Lados
                         OPx2_g = new THREE.BoxGeometry(0.4,0.4,3);
-                        OPx2_m = new THREE.MeshPhongMaterial({color: cor_2});
-                        OPx2 = new THREE.Mesh (OPx2_g, OPx2_m);
+                        OPx2 = new THREE.Mesh (OPx2_g, cor_2_material);
                         OPx2.position.set(15.2,(j%2==0?(j==0?0:1.8):-1.8),(k%2==0?5.5:-5.5));
                         outras_pecas.add(OPx2);
                         }
@@ -666,8 +660,7 @@ function createCar(){
                     for (let j=0; j<(n_OPx2/5); j++){ // 2 Barras
                         for (let k=0; k<(n_OPx2/5); k++){ // 2 Lados
                         OPx2_g = new THREE.BoxGeometry(0.4,4,0.4);
-                        OPx2_m = new THREE.MeshPhongMaterial({color: cor_2});
-                        OPx2 = new THREE.Mesh (OPx2_g, OPx2_m);
+                        OPx2 = new THREE.Mesh (OPx2_g, cor_2_material);
                         OPx2.position.set(15.2,0,(j%2==0?(k%2==0?6.8:4.2):(k%2==0?-6.8:-4.2)));
                         outras_pecas.add(OPx2);
                         }
@@ -675,26 +668,23 @@ function createCar(){
                 }
             }
             // Grelha
-            let n_OPx3 = 5, OPx3_g, OPx3_m, OPx3;
+            let n_OPx3 = 5, OPx3_g, OPx3;
             for (let i=0; i<n_OPx3; i++){
             OPx3_g = new THREE.BoxGeometry(0.4,0.4,7);
-            OPx3_m = new THREE.MeshPhongMaterial({color: cor_2});
-            OPx3 = new THREE.Mesh (OPx3_g, OPx3_m);
+            OPx3 = new THREE.Mesh (OPx3_g, cor_2_material);
             OPx3.position.set(-15.2,(0.8-(i*0.65)),0);
             outras_pecas.add(OPx3);
             }
             // Superfície da bagagem
             let OPx4_g = new THREE.BoxGeometry(9, 0.2, 12);
-            let OPx4_m = new THREE.MeshPhongMaterial({color: cor_2});
-            let OPx4 = new THREE.Mesh(OPx4_g, OPx4_m);
+            let OPx4 = new THREE.Mesh(OPx4_g, cor_2_material);
             OPx4.position.set(8.5, 2.1, 0);
             outras_pecas.add(OPx4);
             // Barras da bagagem
-            let n_OPx5 = 6, OPx5_g, OPx5_m, OPx5;
+            let n_OPx5 = 6, OPx5_g, OPx5;
             for(let i=0; i<n_OPx5; i++){
             OPx5_g = new THREE.BoxGeometry((i==2||i==5?2:1), (i==2||i==5?1:3), 1);
-            OPx5_m = new THREE.MeshPhongMaterial({color: cor_2});
-            OPx5 = new THREE.Mesh(OPx5_g, OPx5_m);
+            OPx5 = new THREE.Mesh(OPx5_g, cor_2_material);
             OPx5.position.set((i==2||i==5?5:7.5), (i==1||i==4?5.5:8.5), (i<3?7:-7));
                 if(i%3==0){
                 OPx5_g.vertices[0].set(-1.5, 0.5, 0.5);
@@ -706,8 +696,7 @@ function createCar(){
             }
             // Fundo da grelha
             let OPx6_g = new THREE.BoxGeometry(0.1, 3, 7);
-            let OPx6_m = new THREE.MeshPhongMaterial({color: cor_2});
-            let OPx6 = new THREE.Mesh(OPx6_g, OPx6_m);
+            let OPx6 = new THREE.Mesh(OPx6_g, cor_2_material);
             OPx6.position.set(-15.05, -0.5, 0);
             outras_pecas.add(OPx6);
         // Vidros
@@ -715,11 +704,10 @@ function createCar(){
         vidros.position.set(0, 0, 0);
         carro.add(vidros);
             // Vidros laterais do condutor
-            let n_Vx0 = 2, Vx0_g, Vx0_m, Vx0;
+            let n_Vx0 = 2, Vx0_g, Vx0;
             for(let i=0; i<n_Vx0; i++){
             Vx0_g = new THREE.BoxGeometry(7, 4, 0.04);
-            Vx0_m = new THREE.MeshPhongMaterial({color: cor_3, shininess: 0});
-            Vx0 = new THREE.Mesh(Vx0_g, Vx0_m);
+            Vx0 = new THREE.Mesh(Vx0_g, cor_3_material);
             Vx0.position.set(-0.5, 6, (i==0?8.02:-8.02));
             Vx0_g.vertices[4].set(-2.5, 2, -0.02);
             Vx0_g.vertices[5].set(-2.5, 2, 0.02);
@@ -727,8 +715,7 @@ function createCar(){
             }
             // Vidro frontal do condutor
             let Vx1_g = new THREE.BoxGeometry(0.04, 4, 14);
-            let Vx1_m = new THREE.MeshPhongMaterial({color: cor_3, shininess: 0});
-            let Vx1 = new THREE.Mesh(Vx1_g, Vx1_m);
+            let Vx1 = new THREE.Mesh(Vx1_g, cor_3_material);
             Vx1.position.set(-5.45, 6, 0);
             Vx1_g.vertices[0].set(1.16, 2, 7);
             Vx1_g.vertices[1].set(1.16, 2, -7);
@@ -761,6 +748,42 @@ function createCar(){
             Rx4.position.set(9, -5.6, -7);
             Rx4.rotation.x = Math.PI / 2;
             rodas.add(Rx4);
+    //Luzes do carro
+    luz_frontal_esq = new THREE.PointLight(0xfff5bd, 1, 20);
+    luz_frontal_esq.position.set(-18, 0, 6);
+    const lfe_helper = new THREE.Object3D();
+    lfe_helper.position.set(0, -9, 0);
+    carro.add(lfe_helper);
+    luz_frontal_esq.target = lfe_helper;
+    carro.add(luz_frontal_esq);
+    scene.add(luz_frontal_esq.target)
+    //
+    luz_frontal_dir = new THREE.PointLight(0xfff5bd, 1, 20);
+    luz_frontal_dir.position.set(-18, 0, -6);
+    const test2 = new THREE.Object3D();
+    test2.position.set(0, -9, 0);
+    carro.add(test2);
+    luz_frontal_dir.target = test2;
+    carro.add(luz_frontal_dir);
+    scene.add(luz_frontal_dir.target)
+    //
+    luz_traseira_esq = new THREE.PointLight(0xc91a14, 1, 10);
+    luz_traseira_esq.position.set(18, 0, 6);
+    const test4 = new THREE.Object3D();
+    test4.position.set(0, -9, 0);
+    carro.add(test4);
+    luz_traseira_esq.target = test4;
+    carro.add(luz_traseira_esq);
+    scene.add(luz_traseira_esq.target)
+    //
+    luz_traseira_dir = new THREE.PointLight(0xc91a14, 1, 10);
+    luz_traseira_dir.position.set(18, 0, -6);
+    const test3 = new THREE.Object3D();
+    test3.position.set(0, -9, 0);
+    carro.add(test3);
+    luz_traseira_dir.target = test3;
+    carro.add(luz_traseira_dir);
+    scene.add(luz_traseira_dir.target)
 }
 // Movimento do carro com o teclado 
 document.addEventListener('keydown', (e) => {
@@ -777,6 +800,12 @@ document.addEventListener('keydown', (e) => {
     if (key == "a" || key == "A"){
         carro.direita = -1;
     }
+    if (key == "v" || key == "V"){
+        boost = 2;
+    }
+    if (key == "c" || key == "C"){
+        trocar_camera = !trocar_camera;
+    }
 });
 document.addEventListener('keyup', (e) => {
     let key = e.key;
@@ -786,25 +815,29 @@ document.addEventListener('keyup', (e) => {
     if (key == "d" || key == "D" || key == "a" || key == "A"){
         carro.direita = 0;
     }
+    if (key == "v" || key == "V"){
+        boost = 1;
+    }
 });
 // Função do Render
 function render() {
+    // Fazer com que todos os elementos/objetos relacionados ao objeto pai, neste caso o carro, emita sombras
     carro.traverse(function (child) {
     if (child instanceof THREE.Mesh ) {
-    // it must cast and receive shadows
     child.castShadow = true;
     }
     });
-    sunUpdate();
+    // Atualizar luzes
+    luzesAtualizar();
     // Movimento do carro
     if (carro.direita == 1){
-        carro.rotation.y -= 0.005
+        carro.rotation.y -= 0.001
         if(Rx1.rotation.z <= 0.5){
             Rx1.rotation.z += 0.02
             Rx2.rotation.z += 0.02
         }
     } else if (carro.direita == -1){
-        carro.rotation.y += 0.005
+        carro.rotation.y += 0.001
         if (Rx1.rotation.z >= -0.5){
             Rx1.rotation.z -= 0.02
             Rx2.rotation.z -= 0.02
@@ -819,16 +852,16 @@ function render() {
         }
     }
     if (carro.frente == 1 && (carro.direita != 1 && carro.direita != -1)) {
-    carro.position.x -= 0.5 * Math.cos(carro.rotation.y)
-    carro.position.z += 0.5 * Math.sin(carro.rotation.y)
+    carro.position.x -= (0.5 * boost) * Math.cos(carro.rotation.y)
+    carro.position.z += (0.5 * boost) * Math.sin(carro.rotation.y)
     }
     else if (carro.frente == 1 && carro.direita == 1){
-    carro.position.x -= 0.5 * Math.cos(carro.rotation.y -= 0.003)
-    carro.position.z += 0.5 * Math.sin(carro.rotation.y -= 0.003)
+    carro.position.x -= (0.5 * boost) * Math.cos(carro.rotation.y -= 0.005)
+    carro.position.z += (0.5 * boost) * Math.sin(carro.rotation.y -= 0.005)
     }
     else if (carro.frente == 1 && carro.direita == -1){
-    carro.position.x -= 0.5 * Math.cos(carro.rotation.y += 0.003)
-    carro.position.z += 0.5 * Math.sin(carro.rotation.y += 0.003)
+    carro.position.x -= (0.5 * boost) * Math.cos(carro.rotation.y += 0.005)
+    carro.position.z += (0.5 * boost) * Math.sin(carro.rotation.y += 0.005)
     }
     else if (carro.frente == -1 && (carro.direita != 1 && carro.direita != -1)) {
     carro.position.x += 0.5 * Math.cos(carro.rotation.y)
@@ -842,9 +875,18 @@ function render() {
     carro.position.x += 0.5 * Math.cos(carro.rotation.y -= 0.008)
     carro.position.z -= 0.5 * Math.sin(carro.rotation.y -= 0.008)
     }
-    console.log(Rx1.rotation.z);
-  
-    
+    // Camera
+    if (trocar_camera){
+        let relativeOffset = new THREE.Vector3(140, 80, 0);
+        let cameraOffset = relativeOffset.applyMatrix4(carro.matrixWorld);
+        camera.position.copy(cameraOffset);
+        camera.lookAt(carro.position);
+    }else{
+        let relativeOffset = new THREE.Vector3(70, 40, 0);
+        let cameraOffset = relativeOffset.applyMatrix4(carro.matrixWorld);
+        camera.position.copy(cameraOffset);
+        camera.lookAt(carro.position);
+    }
     renderer.render(scene, camera);
     requestAnimationFrame(render);
 }
