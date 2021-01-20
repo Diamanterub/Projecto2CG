@@ -13,6 +13,7 @@ let carro = {
     frente: false, direita: false
 };
 let Rx1, Rx2; // Rodas Frontais
+let lampadaParque = []
 // Init
 window.onload = function init() {
     // Cena
@@ -62,13 +63,13 @@ function criarAmbiente() {
     texturaSolo.magFilter = THREE.LinearFilter;
     texturaSolo.needsUpdate = true;
     // Plano
-    let plano = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000, 10, 10), new THREE.MeshPhongMaterial({map: texturaSolo, side: THREE.DoubleSide}));
+    let plano = new THREE.Mesh(new THREE.PlaneGeometry(1500, 1500, 10, 10), new THREE.MeshPhongMaterial({map: texturaSolo, side: THREE.DoubleSide}));
     plano.position.set(0, 0, 0);
     plano.receiveShadow = true;
     plano.rotation.x = (Math.PI / 2);
     scene.add(plano);
     // Skybox
-    let skybox = new THREE.Mesh(new THREE.SphereGeometry(1000, 1000, 10, 10), new THREE.MeshBasicMaterial({color: 0x59acbd, side: THREE.DoubleSide}));
+    let skybox = new THREE.Mesh(new THREE.SphereGeometry(1500, 1500, 10, 10), new THREE.MeshBasicMaterial({color: 0x59acbd, side: THREE.DoubleSide}));
     scene.add(skybox);
     // Árvores (Isto está a pedreiro)
     let arvore = new THREE.Object3D();
@@ -199,30 +200,46 @@ function areaJogavel() {
         caixa_terminal.receiveShadow = true;
         caixa_terminal.position.set(-165, 8, -177)
         terminal.add(caixa_terminal);
+
         //Terminal da entrada e saída do parque de estacionamento
         let terminalES = new THREE.Object3D();
         let corpoterminal = new THREE.Mesh(new THREE.BoxGeometry(8, 10, 2), new THREE.MeshPhongMaterial({color: 0xedc72d}));
         corpoterminal.receiveShadow = true;
         corpoterminal.castShadow = true;
         terminalES.add(corpoterminal);
+
+        // Ecra do terminal
         let ecraterminal = new THREE.Mesh(new THREE.BoxGeometry(6, 4, 1), new THREE.MeshPhongMaterial({color: 0x323232}));
         ecraterminal.position.set(0, 1, 1)
         ecraterminal.receiveShadow = true;
         ecraterminal.castShadow = true;
         terminalES.add(ecraterminal);
         // Leitor infravermelhos
+
         let leitorTerminal = new THREE.Mesh(new THREE.BoxGeometry(1, 2, 0.5), new THREE.MeshPhongMaterial({color: 0x5d0011}));
-        leitorTerminal.position.set(2, -3, 1);
+        leitorTerminal.position.set(2, -3, 1.1);
         leitorTerminal.receiveShadow = true;
         leitorTerminal.castShadow = true;
         terminalES.add(leitorTerminal);
         // A case do leitor infravermelhos
+
         let leitorCaseTerminal = new THREE.Mesh(new THREE.BoxGeometry(2, 3, 0.5), new THREE.MeshPhongMaterial({color: 0x000000}));
         leitorCaseTerminal.receiveShadow = true;
         leitorCaseTerminal.castShadow = true;
         leitorCaseTerminal.position.set(2, -3, 1);
         terminalES.add(leitorCaseTerminal);
-        //
+        //Para dar o ticket	
+        let leitorTerminalTicket = new THREE.Mesh(	
+            new THREE.PlaneGeometry(2, 0.1, 32),	
+            new THREE.MeshPhongMaterial({	
+                color: 0x000000,	
+                side: THREE.DoubleSide	
+            })	
+        )	
+        leitorTerminalTicket.receiveShadow = true;	
+        leitorTerminalTicket.position.set(-1.5, -3, 1.1)	
+        terminalES.add(leitorTerminalTicket)
+
         terminalES.position.set(-144, 14, -189);
         terminal.add(terminalES);
         let portaoETerminal = new THREE.Object3D();
@@ -452,7 +469,7 @@ function criarLuzes() {
     // Luz direcional
     luzDirecional = new THREE.DirectionalLight(0xffffff, 0.9);
     luzDirecional.position.set(0, 50, 0)
-    luzDirecional.target = scene;
+    // luzDirecional.target = scene;
     scene.add(luzDirecional.target);
     // Luz direcional (Sombras)
     luzDirecional.castShadow = true;
@@ -460,7 +477,7 @@ function criarLuzes() {
     luzDirecional.shadow.camera = new THREE.OrthographicCamera(-1000, 1000, 50, -500, 0.1, 1200);
     luzDirecional.shadow.bias = 0.00020;
     luzDirecional.shadow.camera.near = 1;
-    luzDirecional.shadow.camera.far = 3000;
+    luzDirecional.shadow.camera.far = 2200;
 
     scene.add(luzDirecional);
     curvaLuz = new THREE.EllipseCurve(
@@ -468,7 +485,76 @@ function criarLuzes() {
         2000, 2000,
         0, 2 * Math.PI
     );
-    // Luzes do carro 
+    // Luzes das lampadas
+
+    //Primeira Lampada
+
+    let lampadaParqueMod
+    lampadaParqueMod = new THREE.SpotLight(0xffffff,0,0,Math.PI / 4,0.5,0);
+    lampadaParqueMod.position.set(-180, 40, -48);
+    lampadaParqueMod.target.position.set(-180, 0, -48);
+    scene.add(lampadaParqueMod)
+    scene.add( lampadaParqueMod.target );
+    lampadaParque.push(lampadaParqueMod)
+
+
+    lampadaParqueMod = new THREE.SpotLight(0xffffff,0,0,Math.PI / 4,0.5,0);
+    lampadaParqueMod.position.set(-180, 40,-32);
+    lampadaParqueMod.target.position.set(-180, 0,-32);
+    scene.add(lampadaParqueMod)
+    scene.add( lampadaParqueMod.target );
+    lampadaParque.push(lampadaParqueMod)
+
+    ///////////////
+
+    //Segunda Lampada
+
+    lampadaParqueMod = new THREE.SpotLight(0xffffff,0,0,Math.PI / 4,0.5,0);
+    lampadaParqueMod.position.set(-180, 40,38);
+    lampadaParqueMod.target.position.set(-180, 0,38);
+    scene.add(lampadaParqueMod)
+    scene.add( lampadaParqueMod.target );
+    lampadaParque.push(lampadaParqueMod)
+
+
+    lampadaParqueMod = new THREE.SpotLight(0xffffff,0,0,Math.PI / 4,0.5,0);
+    lampadaParqueMod.position.set(-180, 40,52);
+    lampadaParqueMod.target.position.set(-180, 0,52);
+    scene.add(lampadaParqueMod)
+    scene.add( lampadaParqueMod.target );
+    lampadaParque.push(lampadaParqueMod)
+
+    ///////////////
+
+    //Terceira Lampada
+
+    lampadaParqueMod = new THREE.SpotLight(0xffffff,0,0,Math.PI / 4,0.5,0);
+    lampadaParqueMod.position.set(-180, 40,132);
+    lampadaParqueMod.target.position.set(-180, 0,132);
+    scene.add(lampadaParqueMod)
+    scene.add(lampadaParqueMod.target);
+    lampadaParque.push(lampadaParqueMod)
+
+
+    lampadaParqueMod = new THREE.SpotLight(0xffffff,0,0,Math.PI / 4,0.5,0);
+    lampadaParqueMod.position.set(-180, 40,148);
+    lampadaParqueMod.target.position.set(-180, 0,148);
+    scene.add(lampadaParqueMod)
+    scene.add( lampadaParqueMod.target );
+    lampadaParque.push(lampadaParqueMod)
+
+    ///////////////
+
+    // Lampada Loja
+
+    let lampadaLoja = new THREE.SpotLight(0xffffff,1,0,Math.PI/3,0.5,0);
+    lampadaLoja.position.set(70, 40,100);
+    lampadaLoja.target.position.set(70, 0,100);
+    // spotLight6.castShadow = true;
+    scene.add(lampadaLoja)
+    scene.add( lampadaLoja.target );
+
+
 }
 
 function luzesAtualizar() {
@@ -476,6 +562,19 @@ function luzesAtualizar() {
         luzDirecional.position.x = curvaLuz.getPointAt(position).x
         luzDirecional.position.y = curvaLuz.getPointAt(position).y
         position += 0.0005
+
+        if(position > 0.5)
+        {
+            for (let i = 0; i < lampadaParque.length; i++) {
+                lampadaParque[i].power = 0.2* 4 * Math.PI  
+            }   
+        }
+        else
+        {
+            for (let i = 0; i < lampadaParque.length; i++) {
+                lampadaParque[i].power = 0
+            }
+        }
     } else {
         position = 0
     }
