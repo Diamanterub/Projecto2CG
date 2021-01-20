@@ -13,6 +13,7 @@ let carro = {
     frente: false, direita: false
 };
 let Rx1, Rx2; // Rodas Frontais
+let lampadaParque = []
 // Init
 window.onload = function init() {
     // Cena
@@ -231,7 +232,6 @@ function areaJogavel() {
         let leitorTerminalTicket = new THREE.Mesh(	
             new THREE.PlaneGeometry(2, 0.1, 32),	
             new THREE.MeshPhongMaterial({	
-                //FIXME: TEMPORARY COLORS	
                 color: 0x000000,	
                 side: THREE.DoubleSide	
             })	
@@ -469,7 +469,7 @@ function criarLuzes() {
     // Luz direcional
     luzDirecional = new THREE.DirectionalLight(0xffffff, 0.9);
     luzDirecional.position.set(0, 50, 0)
-    luzDirecional.target = scene;
+    // luzDirecional.target = scene;
     scene.add(luzDirecional.target);
     // Luz direcional (Sombras)
     luzDirecional.castShadow = true;
@@ -477,7 +477,7 @@ function criarLuzes() {
     luzDirecional.shadow.camera = new THREE.OrthographicCamera(-1000, 1000, 50, -500, 0.1, 1200);
     luzDirecional.shadow.bias = 0.00020;
     luzDirecional.shadow.camera.near = 1;
-    luzDirecional.shadow.camera.far = 3000;
+    luzDirecional.shadow.camera.far = 2200;
 
     scene.add(luzDirecional);
     curvaLuz = new THREE.EllipseCurve(
@@ -485,7 +485,76 @@ function criarLuzes() {
         2000, 2000,
         0, 2 * Math.PI
     );
-    // Luzes do carro 
+    // Luzes das lampadas
+
+    //Primeira Lampada
+
+    let lampadaParqueMod
+    lampadaParqueMod = new THREE.SpotLight(0xffffff,0,0,Math.PI / 4,0.5,0);
+    lampadaParqueMod.position.set(-180, 40, -48);
+    lampadaParqueMod.target.position.set(-180, 0, -48);
+    scene.add(lampadaParqueMod)
+    scene.add( lampadaParqueMod.target );
+    lampadaParque.push(lampadaParqueMod)
+
+
+    lampadaParqueMod = new THREE.SpotLight(0xffffff,0,0,Math.PI / 4,0.5,0);
+    lampadaParqueMod.position.set(-180, 40,-32);
+    lampadaParqueMod.target.position.set(-180, 0,-32);
+    scene.add(lampadaParqueMod)
+    scene.add( lampadaParqueMod.target );
+    lampadaParque.push(lampadaParqueMod)
+
+    ///////////////
+
+    //Segunda Lampada
+
+    lampadaParqueMod = new THREE.SpotLight(0xffffff,0,0,Math.PI / 4,0.5,0);
+    lampadaParqueMod.position.set(-180, 40,38);
+    lampadaParqueMod.target.position.set(-180, 0,38);
+    scene.add(lampadaParqueMod)
+    scene.add( lampadaParqueMod.target );
+    lampadaParque.push(lampadaParqueMod)
+
+
+    lampadaParqueMod = new THREE.SpotLight(0xffffff,0,0,Math.PI / 4,0.5,0);
+    lampadaParqueMod.position.set(-180, 40,52);
+    lampadaParqueMod.target.position.set(-180, 0,52);
+    scene.add(lampadaParqueMod)
+    scene.add( lampadaParqueMod.target );
+    lampadaParque.push(lampadaParqueMod)
+
+    ///////////////
+
+    //Terceira Lampada
+
+    lampadaParqueMod = new THREE.SpotLight(0xffffff,0,0,Math.PI / 4,0.5,0);
+    lampadaParqueMod.position.set(-180, 40,132);
+    lampadaParqueMod.target.position.set(-180, 0,132);
+    scene.add(lampadaParqueMod)
+    scene.add(lampadaParqueMod.target);
+    lampadaParque.push(lampadaParqueMod)
+
+
+    lampadaParqueMod = new THREE.SpotLight(0xffffff,0,0,Math.PI / 4,0.5,0);
+    lampadaParqueMod.position.set(-180, 40,148);
+    lampadaParqueMod.target.position.set(-180, 0,148);
+    scene.add(lampadaParqueMod)
+    scene.add( lampadaParqueMod.target );
+    lampadaParque.push(lampadaParqueMod)
+
+    ///////////////
+
+    // Lampada Loja
+
+    let lampadaLoja = new THREE.SpotLight(0xffffff,1,0,Math.PI/3,0.5,0);
+    lampadaLoja.position.set(70, 40,100);
+    lampadaLoja.target.position.set(70, 0,100);
+    // spotLight6.castShadow = true;
+    scene.add(lampadaLoja)
+    scene.add( lampadaLoja.target );
+
+
 }
 
 function luzesAtualizar() {
@@ -493,6 +562,19 @@ function luzesAtualizar() {
         luzDirecional.position.x = curvaLuz.getPointAt(position).x
         luzDirecional.position.y = curvaLuz.getPointAt(position).y
         position += 0.0005
+
+        if(position > 0.5)
+        {
+            for (let i = 0; i < lampadaParque.length; i++) {
+                lampadaParque[i].power = 0.2* 4 * Math.PI  
+            }   
+        }
+        else
+        {
+            for (let i = 0; i < lampadaParque.length; i++) {
+                lampadaParque[i].power = 0
+            }
+        }
     } else {
         position = 0
     }
