@@ -2,7 +2,7 @@
 let scene, renderer, camera;
 let luzDirecional, hemisphereLight;
 let luz_frontal_esq, luz_frontal_dir, luz_traseira_esq, luz_traseira_dir;
-let objetos; 
+let objetos = []; 
 let curvaLuz;
 let position = 0;
 let mudancaCiclo = true;
@@ -143,6 +143,7 @@ function areaJogavel() {
             sub_muro.castShadow = true;
             sub_muro.receiveShadow = true;
             muro.add(sub_muro);
+            objetos.push(sub_muro);
         }
         // Muros (Interiores)
             //Muro da ala das cargas e descargas
@@ -152,6 +153,7 @@ function areaJogavel() {
             muro_i.castShadow = true;
             muro_i.receiveShadow = true;
             muro.add(muro_i);
+            objetos.push(muro_i);
             //Muro laterais ao estacionamento
             let n_muros_laterais = 2, muro_lateral, muro_lateral_g;
             for(let i = 0; i < n_muros_laterais; i++) {
@@ -161,6 +163,7 @@ function areaJogavel() {
                 muro_lateral.castShadow = true;
                 muro_lateral.receiveShadow = true;
                 muro.add(muro_lateral);
+                objetos.push(muro_lateral);
             }
     scene.add(muro);
     // Passeio
@@ -194,12 +197,15 @@ function areaJogavel() {
         cancela.rotateX(Math.PI / 2);
         cancela.position.set(-165, 12, -147)
         terminal.add(cancela);
+        objetos.push(cancela);
+        
         // Caixa da cancela
         caixa_terminal = new THREE.Mesh(new THREE.BoxGeometry(6, 14, 6), new THREE.MeshPhongMaterial({color: 0x323232}));
         caixa_terminal.castShadow = true;
         caixa_terminal.receiveShadow = true;
         caixa_terminal.position.set(-165, 8, -177)
         terminal.add(caixa_terminal);
+        objetos.push(caixa_terminal);
 
         //Terminal da entrada e saída do parque de estacionamento
         let terminalES = new THREE.Object3D();
@@ -207,6 +213,7 @@ function areaJogavel() {
         corpoterminal.receiveShadow = true;
         corpoterminal.castShadow = true;
         terminalES.add(corpoterminal);
+        objetos.push(corpoterminal);
 
         // Ecra do terminal
         let ecraterminal = new THREE.Mesh(new THREE.BoxGeometry(6, 4, 1), new THREE.MeshPhongMaterial({color: 0x323232}));
@@ -214,20 +221,23 @@ function areaJogavel() {
         ecraterminal.receiveShadow = true;
         ecraterminal.castShadow = true;
         terminalES.add(ecraterminal);
-        // Leitor infravermelhos
+        objetos.push(ecraterminal);
 
+        // Leitor infravermelhos
         let leitorTerminal = new THREE.Mesh(new THREE.BoxGeometry(1, 2, 0.5), new THREE.MeshPhongMaterial({color: 0x5d0011}));
         leitorTerminal.position.set(2, -3, 1.1);
         leitorTerminal.receiveShadow = true;
         leitorTerminal.castShadow = true;
         terminalES.add(leitorTerminal);
+        objetos.push(leitorTerminal);
+        
         // A case do leitor infravermelhos
-
         let leitorCaseTerminal = new THREE.Mesh(new THREE.BoxGeometry(2, 3, 0.5), new THREE.MeshPhongMaterial({color: 0x000000}));
         leitorCaseTerminal.receiveShadow = true;
         leitorCaseTerminal.castShadow = true;
         leitorCaseTerminal.position.set(2, -3, 1);
         terminalES.add(leitorCaseTerminal);
+        objetos.push(leitorCaseTerminal);
         //Para dar o ticket	
         let leitorTerminalTicket = new THREE.Mesh(	
             new THREE.PlaneGeometry(2, 0.1, 32),	
@@ -239,6 +249,7 @@ function areaJogavel() {
         leitorTerminalTicket.receiveShadow = true;	
         leitorTerminalTicket.position.set(-1.5, -3, 1.1)	
         terminalES.add(leitorTerminalTicket)
+        objetos.push(leitorTerminalTicket);
 
         terminalES.position.set(-144, 14, -189);
         terminal.add(terminalES);
@@ -324,12 +335,14 @@ function areaJogavel() {
     posteIluminacaoMod.rotation.y = Math.PI/2;
     posteIluminacaoMod.position.set(-180, 23, 45);
     scene.add(posteIluminacaoMod);
+    objetos.push(posteIluminacaoMod);
     let n_copias_poste_iluminacao = 2, copia_poste_iluminacao;
     for (let i = 0; i < n_copias_poste_iluminacao; i++){
         copia_poste_iluminacao = new THREE.Object3D();
         copia_poste_iluminacao.copy(posteIluminacaoMod, true);
         copia_poste_iluminacao.position.set(-180, 23, i == 1? 140 : -40);
         scene.add(copia_poste_iluminacao);
+        objetos.push(copia_poste_iluminacao);
     }
 }
 // Função para a criação da loja
@@ -363,6 +376,7 @@ function criarLoja() {
     in_paredeLoja.receiveShadow = true;
     paredeLoja.add(in_paredeLoja);
     scene.add(paredeLoja);
+    objetos.push(paredeLoja);
     // Telhado da Loja
     let telhadoLoja_g = new THREE.BoxGeometry(210, 4, 210);
     let telhadoLoja_m = new THREE.MeshPhongMaterial({color: 0x202020});
@@ -899,8 +913,8 @@ document.addEventListener('keydown', (e) => {
     if (key == "a" || key == "A"){
         carro.direita = -1;
     }
-    if (key == "v" || key == "V"){
-        boost = 2;
+    if (key == "Shift"){
+        boost = Math.round(boost + 2 - 3 * (boost / 2))
     }
     if (key == "c" || key == "C"){
         trocar_camera = !trocar_camera;
@@ -914,10 +928,36 @@ document.addEventListener('keyup', (e) => {
     if (key == "d" || key == "D" || key == "a" || key == "A"){
         carro.direita = 0;
     }
-    if (key == "v" || key == "V"){
-        boost = 1;
-    }
+    // if (key == "Shift"){
+    //     boost = 1;
+    // }
 });
+//Função de Colisões 
+function checkCollision() {
+    let vertices = [];
+    carro.updateMatrixWorld();
+    carro.traverse( function(child) {
+        if (child instanceof THREE.Mesh) {
+            let len = child.geometry.vertices.length;
+            for (let i = 0; i < len; i++) {
+                let v = child.geometry.vertices[i].clone();
+                v.applyMatrix4(child.matrixWorld);
+                vertices.push(v);
+            }
+        }
+    });
+
+    for (let i = 0; i < objetos.length; i++) {
+        let objectBox = new THREE.Box3().setFromObject(objetos[i]);
+        for (let j = 0; j < vertices.length; j++) {
+            let collision = objectBox.containsPoint(vertices[j]);
+            if (collision) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
 // Função do Render
 function render() {
     // Fazer com que todos os elementos/objetos relacionados ao objeto pai, neste caso o carro, emita sombras
@@ -929,14 +969,17 @@ function render() {
     // Atualizar luzes
     luzesAtualizar();
     // Movimento do carro
+    let oldRot = carro.rotation.y;
     if (carro.direita == 1){
         carro.rotation.y -= 0.001
+        if (checkCollision()) {carro.rotation.y = oldRot;}
         if(Rx1.rotation.z <= 0.5){
             Rx1.rotation.z += 0.02
             Rx2.rotation.z += 0.02
         }
     } else if (carro.direita == -1){
         carro.rotation.y += 0.001
+        if (checkCollision()) {carro.rotation.y = oldRot;}
         if (Rx1.rotation.z >= -0.5){
             Rx1.rotation.z -= 0.02
             Rx2.rotation.z -= 0.02
@@ -950,29 +993,36 @@ function render() {
             Rx2.rotation.z += 0.02
         }
     }
+    let oldPos = carro.position.clone();
     if (carro.frente == 1 && (carro.direita != 1 && carro.direita != -1)) {
     carro.position.x -= (0.5 * boost) * Math.cos(carro.rotation.y)
     carro.position.z += (0.5 * boost) * Math.sin(carro.rotation.y)
+    if (checkCollision()) {carro.position.x = oldPos.x; carro.position.z = oldPos.z;}
     }
     else if (carro.frente == 1 && carro.direita == 1){
     carro.position.x -= (0.5 * boost) * Math.cos(carro.rotation.y -= 0.005)
     carro.position.z += (0.5 * boost) * Math.sin(carro.rotation.y -= 0.005)
+    if (checkCollision()) {carro.position.x = oldPos.x; carro.position.z = oldPos.z;}
     }
     else if (carro.frente == 1 && carro.direita == -1){
     carro.position.x -= (0.5 * boost) * Math.cos(carro.rotation.y += 0.005)
     carro.position.z += (0.5 * boost) * Math.sin(carro.rotation.y += 0.005)
+    if (checkCollision()) {carro.position.x = oldPos.x; carro.position.z = oldPos.z;}
     }
     else if (carro.frente == -1 && (carro.direita != 1 && carro.direita != -1)) {
     carro.position.x += 0.5 * Math.cos(carro.rotation.y)
     carro.position.z -= 0.5 * Math.sin(carro.rotation.y)
+    if (checkCollision()) {carro.position.x = oldPos.x; carro.position.z = oldPos.z;}
     }
     else if (carro.frente == -1 && carro.direita == 1){
     carro.position.x += 0.5 * Math.cos(carro.rotation.y += 0.008)
     carro.position.z -= 0.5 * Math.sin(carro.rotation.y += 0.008)
+    if (checkCollision()) {carro.position.x = oldPos.x; carro.position.z = oldPos.z;}
     }
     else if (carro.frente == -1 && carro.direita == -1){
     carro.position.x += 0.5 * Math.cos(carro.rotation.y -= 0.008)
     carro.position.z -= 0.5 * Math.sin(carro.rotation.y -= 0.008)
+    if (checkCollision()) {carro.position.x = oldPos.x; carro.position.z = oldPos.z;}
     }
     // Camera
     if (trocar_camera){
