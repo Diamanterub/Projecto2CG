@@ -62,13 +62,13 @@ function criarAmbiente() {
     texturaSolo.magFilter = THREE.LinearFilter;
     texturaSolo.needsUpdate = true;
     // Plano
-    let plano = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000, 10, 10), new THREE.MeshPhongMaterial({map: texturaSolo, side: THREE.DoubleSide}));
+    let plano = new THREE.Mesh(new THREE.PlaneGeometry(1500, 1500, 10, 10), new THREE.MeshPhongMaterial({map: texturaSolo, side: THREE.DoubleSide}));
     plano.position.set(0, 0, 0);
     plano.receiveShadow = true;
     plano.rotation.x = (Math.PI / 2);
     scene.add(plano);
     // Skybox
-    let skybox = new THREE.Mesh(new THREE.SphereGeometry(1000, 1000, 10, 10), new THREE.MeshBasicMaterial({color: 0x59acbd, side: THREE.DoubleSide}));
+    let skybox = new THREE.Mesh(new THREE.SphereGeometry(1500, 1500, 10, 10), new THREE.MeshBasicMaterial({color: 0x59acbd, side: THREE.DoubleSide}));
     scene.add(skybox);
     // Árvores (Isto está a pedreiro)
     let arvore = new THREE.Object3D();
@@ -199,30 +199,47 @@ function areaJogavel() {
         caixa_terminal.receiveShadow = true;
         caixa_terminal.position.set(-165, 8, -177)
         terminal.add(caixa_terminal);
+
         //Terminal da entrada e saída do parque de estacionamento
         let terminalES = new THREE.Object3D();
         let corpoterminal = new THREE.Mesh(new THREE.BoxGeometry(8, 10, 2), new THREE.MeshPhongMaterial({color: 0xedc72d}));
         corpoterminal.receiveShadow = true;
         corpoterminal.castShadow = true;
         terminalES.add(corpoterminal);
+
+        // Ecra do terminal
         let ecraterminal = new THREE.Mesh(new THREE.BoxGeometry(6, 4, 1), new THREE.MeshPhongMaterial({color: 0x323232}));
         ecraterminal.position.set(0, 1, 1)
         ecraterminal.receiveShadow = true;
         ecraterminal.castShadow = true;
         terminalES.add(ecraterminal);
         // Leitor infravermelhos
+
         let leitorTerminal = new THREE.Mesh(new THREE.BoxGeometry(1, 2, 0.5), new THREE.MeshPhongMaterial({color: 0x5d0011}));
-        leitorTerminal.position.set(2, -3, 1);
+        leitorTerminal.position.set(2, -3, 1.1);
         leitorTerminal.receiveShadow = true;
         leitorTerminal.castShadow = true;
         terminalES.add(leitorTerminal);
         // A case do leitor infravermelhos
+
         let leitorCaseTerminal = new THREE.Mesh(new THREE.BoxGeometry(2, 3, 0.5), new THREE.MeshPhongMaterial({color: 0x000000}));
         leitorCaseTerminal.receiveShadow = true;
         leitorCaseTerminal.castShadow = true;
         leitorCaseTerminal.position.set(2, -3, 1);
         terminalES.add(leitorCaseTerminal);
-        //
+        //Para dar o ticket	
+        let leitorTerminalTicket = new THREE.Mesh(	
+            new THREE.PlaneGeometry(2, 0.1, 32),	
+            new THREE.MeshPhongMaterial({	
+                //FIXME: TEMPORARY COLORS	
+                color: 0x000000,	
+                side: THREE.DoubleSide	
+            })	
+        )	
+        leitorTerminalTicket.receiveShadow = true;	
+        leitorTerminalTicket.position.set(-1.5, -3, 1.1)	
+        terminalES.add(leitorTerminalTicket)
+
         terminalES.position.set(-144, 14, -189);
         terminal.add(terminalES);
         let portaoETerminal = new THREE.Object3D();
