@@ -561,7 +561,7 @@ function luzesAtualizar() {
     if (position <= 1) {
         luzDirecional.position.x = curvaLuz.getPointAt(position).x
         luzDirecional.position.y = curvaLuz.getPointAt(position).y
-        position += 0.0005
+        position += 0.00005
 
         if(position > 0.5)
         {
@@ -579,18 +579,18 @@ function luzesAtualizar() {
         position = 0
     }
     if (valorCorRGB <= 0.5 && mudancaCiclo) {
-        valorCorRGB += 0.0005;
+        valorCorRGB += 0.00005;
         if (valorCorRGB > 0.5){
             mudancaCiclo = false;
         }
     } else {
-        valorCorRGB -= 0.0005;
+        valorCorRGB -= 0.00005;
         if (valorCorRGB < 0){
             mudancaCiclo = true;
         }
     }
     corAmbiente = new THREE.Color(valorCorRGB, valorCorRGB, valorCorRGB);
-    scene.fog = new THREE.Fog(corAmbiente, 0, 200 + 2000*valorCorRGB);
+    scene.fog = new THREE.Fog(corAmbiente, 0, 200 + 3000*valorCorRGB);
 }
 
 function criarCarro(){
